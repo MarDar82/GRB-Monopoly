@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRB Monopoly - Lobby</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #222;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #phone-screen {
+            background-color: #111;
+            width: 350px;
+            height: 600px;
+            border: 5px solid black;
+            border-radius: 20px;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+        input {
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover { background-color: #218838; }
+        
+        #lobby {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            justify-content: space-between;
+        }
+        #players-list {
+            background: #333;
+            padding: 15px;
+            border-radius: 10px;
+            flex-grow: 1;
+            margin-bottom: 20px;
+            overflow-y: auto;
+        }
+        .player-item {
+            background: #444;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 5px solid #f00;
+        }
+        #status {
+            color: #888;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="phone-screen">
+    <!-- Ekran Logowania -->
+    <div id="login-screen">
+        <h2>GRB Monopoly</h2>
+        <p>Wpisz swój nick, aby dołączyć do gry:</p>
+        <input type="text" id="nickname-input" placeholder="np. Pesta" maxlength="12">
+        <br>
+        <button onclick="joinGame()">Dołącz do gry</button>
+        <div id="status">Szukam serwera...</div>
+    </div>
+
+    <!-- Pokój Oczekiwania (Lobby) -->
+    <div id="lobby">
+        <div>
+            <h2>Pokój Gry</h2>
+            <p>Gracze w lobby:</p>
+            <div id="players-list"></div>
+        </div>
+        <div>
+            <button style="background-color: #ffc107; color: black;" onclick="startGame()">Rozpocznij Grę</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+
+<script>
+    const SERVER_URL = "http://localhost:3000"; 
+    
+    const socket = io(SERVER_URL);
+    let myNick = "";
+
+    socket.on('connect_error', () => {
+        document.getElementById('status').innerText = "Błąd: Serwer jest wyłączony.";
+    });
+    
+    socket.on('connect', () => {
+        document.getElementById('status').innerText = "Połączono z serwerem! Wpisz nick.";
+    });
+
+    function joinGame() {
+        const input = document.getElementById('nickname-input');
+        const nick = input.value.trim();
+        if (nick.length > 0) {
+            myNick = nick;
+            socket.emit('joinGame', nick);
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('lobby').style.display = 'flex';
+        }
+    }
+
+    socket.on('updatePlayers', (players) => {
+        const listDiv = document.getElementById('players-list');
+        listDiv.innerHTML = '';
+        players.forEach(player => {
+            const div = document.createElement('div');
+            div.className = 'player-item';
+            div.innerText = player.nick;
+            listDiv.appendChild(div);
+        });
+    });
+
+    function startGame() {
+        alert("Gra się rozpoczyna! (Na razie to tylko test lobby, w kolejnym kroku dodamy planszę)");
+    }
+</script>
+
+</body>
+</html>
