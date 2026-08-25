@@ -20,7 +20,7 @@ io.on('connection', (socket) => {
   console.log('Nowy telefon połączył się z serwerem!');
 
   socket.on('joinGame', (nickname) => {
-    if (gameStarted) return; // Nie można dołączyć jak gra trwa
+    if (gameStarted) return;
     
     players[socket.id] = {
       nick: nickname,
@@ -31,12 +31,13 @@ io.on('connection', (socket) => {
   });
 
   socket.on('startGame', () => {
-    if (gameStarted) return;
+    // ZABEZPIECZENIE: Nie startuj, jeśli brak graczy lub gra trwa
+    if (gameStarted || Object.keys(players).length === 0) return;
+    
     gameStarted = true;
     playerOrder = Object.keys(players);
     currentTurn = 0;
     
-    // Rozgłoś wszystkim start gry i czyja jest kolej
     io.emit('gameStarted', {
       players: Object.values(players),
       turn: players[playerOrder[currentTurn]].nick
@@ -44,16 +45,14 @@ io.on('connection', (socket) => {
   });
 
   socket.on('rollDice', () => {
-    if (!gameStarted || playerOrder[currentTurn] !== socket.id) return; // Tylko ten, którego jest kolej, może rzucić
+    if (!gameStarted || playerOrder[currentTurn] !== socket.id) return;
     
-    const roll = Math.floor(Math.random() * 12) + 1; // Rzut 1-12
+    const roll = Math.floor(Math.random() * 12) + 1;
     players[socket.id].position = (players[socket.id].position + roll) % 40;
     
-    // Przekaż następną kolej
     currentTurn = (currentTurn + 1) % playerOrder.length;
     const nextTurn = players[playerOrder[currentTurn]].nick;
     
-    // Wyślij do wszystkich wynik rzutu i nowe pozycje graczy
     io.emit('diceRolled', {
       roller: players[socket.id].nick,
       roll: roll,
