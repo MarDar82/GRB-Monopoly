@@ -15,8 +15,29 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;background:#100f0c;color:var(--ink);font-family:'DM Sans',sans-serif}
-body{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:36px;background:
+body{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:36px;gap:30px;flex-wrap:wrap;background:
  radial-gradient(circle at 50% 8%,#2c2921 0,#14130f 42%,#090908 100%)}
+
+/* --- TELEFON --- */
+.hidden { display: none !important; }
+#phone-screen {
+    background-color: #171613; width: 340px; min-height: 480px; border: 4px solid var(--gold); border-radius: 18px;
+    padding: 25px; box-sizing: border-box; display: flex; flex-direction: column; text-align: center;
+    color: var(--paper); font-family: 'DM Sans', sans-serif; box-shadow: 0 20px 40px rgba(0,0,0,.55);
+}
+#phone-screen h2 { font-family: 'Anton', sans-serif; color: var(--gold); letter-spacing: 2px; margin: 0 0 15px 0; }
+#phone-screen p { color: #b9d0c5; font-size: 14px; margin-bottom: 15px; }
+#phone-screen input { padding: 15px; font-size: 16px; border-radius: 8px; border: 2px solid var(--gold); background: #100f0c; color: var(--paper); margin-bottom: 15px; text-align: center; }
+#phone-screen button { background-color: var(--gold); color: var(--ink); border: none; padding: 15px; font-size: 16px; font-weight: 800; border-radius: 8px; cursor: pointer; width: 100%; letter-spacing: 1px; text-transform: uppercase; }
+#phone-screen button:hover { background-color: #b18a39; }
+#phone-screen button:disabled { background-color: #444; color: #888; cursor: not-allowed; border-color: #555; }
+
+#lobby { display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
+#players-list { background: #100f0c; border: 1px solid var(--gold); padding: 15px; border-radius: 8px; flex-grow: 1; margin-bottom: 20px; overflow-y: auto; text-align: left; }
+.player-item { background: #2c2921; margin: 5px 0; padding: 10px; border-radius: 4px; color: var(--paper); border-left: 4px solid var(--gold); }
+#status { color: #b9d0c5; font-size: 12px; margin-top: 15px; font-style: italic; }
+
+/* --- PLANSZA --- */
 .stage{width:min(94vw,1040px);display:flex;justify-content:center;align-items:center}
 .board-shell{width:960px;aspect-ratio:1;border-radius:18px;padding:16px;background:linear-gradient(145deg,#e1c575,#8b6a29 44%,#f0d487 100%);box-shadow:0 40px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.12) inset}
 .board{width:100%;height:100%;display:grid;grid-template-columns:112px repeat(9,1fr) 112px;grid-template-rows:112px repeat(9,1fr) 112px;position:relative;overflow:hidden;border:6px solid #241d13;background:var(--paper);box-shadow:inset 0 0 0 2px rgba(255,255,255,.45)}
@@ -42,23 +63,57 @@ body{min-height:100vh;display:flex;justify-content:center;align-items:center;pad
 </style>
 </head>
 <body>
-<div class="stage">
+
+<!-- TELEFON -->
+<div id="phone-screen">
+    <div id="login-screen">
+        <h2>GRB Monopoly</h2>
+        <p>Wpisz swój nick, aby dołączyć do gry:</p>
+        <input type="text" id="nickname-input" placeholder="np. Pesta" maxlength="12">
+        <button id="join-btn" onclick="joinGame()" disabled>Dołącz do gry</button>
+        <div id="status">Budzenie serwera... (może potrwać do minuty)</div>
+    </div>
+
+    <div id="lobby" class="hidden">
+        <div>
+            <h2>Pokój Gry</h2>
+            <div id="players-list"></div>
+        </div>
+        <button style="background-color: #d0a84c; color: #171613;" onclick="startGame()">Rozpocznij Grę</button>
+    </div>
+
+    <div id="game-controls" class="hidden">
+        <h2 id="turn-indicator">Tura: </h2>
+        <h3 style="color: #d0a84c;">Wynik: <span id="dice-result">-</span></h3>
+        <button id="roll-btn" onclick="rollDice()">Rzuć Kostką (1-12)</button>
+    </div>
+</div>
+
+<!-- PLANSZA -->
+<div class="stage hidden" id="board-stage">
   <div class="board-shell">
     <div class="board" id="board">
       <div class="center"><div class="center-card"><div class="brand-small">GRB ORIGINAL</div><div class="brand">MONOPOLY</div><div class="brand-sub">handel • ryzyko • zwycięstwo</div></div></div>
     </div>
   </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
 <script>
+// --- DANE PLANSZY ---
 const spaces=[
  ['START','corner start'],['Dom Pesta','property brown'],['Kasa Społ.','event'],['Dom Natana','property brown'],['Podatek','tax'],['Żabka 1','shop'],['Brenna','property sky'],['Szansa','event'],['Rybarzowice','property sky'],['Przesieka','property sky'],
  ['WIĘZIENIE','corner jail'],['Hotel 1','property pink'],['Elektrownia','utility'],['Hotel 2','property pink'],['mm','property pink'],['Żabka 2','shop'],['Salon','property orange'],['Kasa Społ.','event'],['Sami swoi','property orange'],['Pokój basen.','property orange'],
  ['PARKING','corner parking'],['Dom Anusa','property red'],['Szansa','event'],['Dom Lewego','property red'],['Dom Wacha','property red'],['Żabka 3','shop'],['Borek','property yellow'],['Los Santos','property yellow'],['Wodociągi','utility'],['Plet','property yellow'],
  ['IDŹ DO WIĘZ.','corner gojail'],['Klub Platz','property forest'],['Piątek','property forest'],['Kasa Społ.','event'],['Pewex','property forest'],['Żabka 4','shop'],['Szansa','event'],['82','property navy'],['Podatek Luks.','tax'],['Przystanek','property navy']
 ];
+
 const board=document.getElementById('board');
+
+// --- GENEROWANIE PLANSZY ---
 function add(i){
  const [name,cls]=spaces[i];const el=document.createElement('div');el.className='space '+cls;
+ el.id = 'space-' + i; // DODANO ID DO POLA dla pionków
  let row,col,side;
  if(i<11){row=11;col=11-i;side='side-bottom'}else if(i<20){row=11-(i-10);col=1;side='side-left'}else if(i<31){row=1;col=1+(i-20);side='side-top'}else{row=1+(i-30);col=11;side='side-right'}
  el.classList.add(side);el.style.gridRow=row;el.style.gridColumn=col;
@@ -67,6 +122,123 @@ function add(i){
  board.appendChild(el);
 }
 spaces.forEach((_,i)=>add(i));
+
+// --- LOGIKA MULTIPLAYER ---
+const SERVER_URL = "https://grb-monopoly.onrender.com"; 
+const socket = io(SERVER_URL);
+let myNick = "";
+let isMyTurn = false;
+const tokenColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+
+socket.on('connect', () => { 
+    document.getElementById('status').innerText = "Połączono! Możesz wpisać nick.";
+    document.getElementById('join-btn').disabled = false;
+});
+
+socket.on('connect_error', () => { 
+    document.getElementById('status').innerText = "Błąd: Serwer wyłączony lub się budzi...";
+    document.getElementById('join-btn').disabled = true;
+});
+
+function joinGame() {
+    const nick = document.getElementById('nickname-input').value.trim();
+    if (nick.length > 0) {
+        myNick = nick;
+        socket.emit('joinGame', nick);
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('lobby').classList.remove('hidden');
+    }
+}
+
+socket.on('updatePlayers', (players) => {
+    const listDiv = document.getElementById('players-list');
+    listDiv.innerHTML = '';
+    players.forEach(player => {
+        const div = document.createElement('div');
+        div.className = 'player-item';
+        div.innerText = player.nick;
+        listDiv.appendChild(div);
+    });
+});
+
+function startGame() { socket.emit('startGame'); }
+
+socket.on('gameStarted', (data) => {
+    document.getElementById('lobby').classList.add('hidden');
+    document.getElementById('game-controls').classList.remove('hidden');
+    document.getElementById('board-stage').classList.remove('hidden');
+    
+    generateTokens(data.players);
+    isMyTurn = (data.turn === myNick);
+    updateTurnIndicator(data.turn);
+});
+
+function rollDice() {
+    if(!isMyTurn) return;
+    socket.emit('rollDice');
+}
+
+socket.on('diceRolled', (data) => {
+    document.getElementById('dice-result').innerText = data.roll;
+    updateTokens(data.players);
+    isMyTurn = (data.nextTurn === myNick);
+    updateTurnIndicator(data.nextTurn);
+});
+
+function updateTurnIndicator(turnNick) {
+    const btn = document.getElementById('roll-btn');
+    if(isMyTurn) {
+        document.getElementById('turn-indicator').innerText = "Twoja tura! (" + turnNick + ")";
+        btn.disabled = false;
+    } else {
+        document.getElementById('turn-indicator').innerText = "Tura gracza: " + turnNick;
+        btn.disabled = true;
+    }
+}
+
+// --- LOGIKA PIONKÓW ---
+function generateTokens(players) {
+    document.querySelectorAll('.token').forEach(t => t.remove());
+    
+    // Czekamy ułamek sekundy by plansza wyliczyła wymiary
+    setTimeout(() => {
+        const startSpace = document.getElementById('space-0');
+        const spaceRect = startSpace.getBoundingClientRect();
+        const boardRect = board.getBoundingClientRect();
+        
+        const x = spaceRect.left - boardRect.left + (spaceRect.width / 2) - 11;
+        const y = spaceRect.top - boardRect.top + (spaceRect.height / 2) - 11;
+
+        players.forEach((player, index) => {
+            const token = document.createElement('div');
+            token.className = 'token';
+            token.id = 'token-' + player.nick;
+            token.style.backgroundColor = tokenColors[index % tokenColors.length];
+            token.style.left = (x + (index * 5)) + 'px'; 
+            token.style.top = y + 'px';
+            board.appendChild(token);
+        });
+    }, 100);
+}
+
+function updateTokens(players) {
+    const boardRect = board.getBoundingClientRect();
+
+    players.forEach((player, index) => {
+        const token = document.getElementById('token-' + player.nick);
+        if (token) {
+            const spaceElement = document.getElementById('space-' + player.position);
+            if (!spaceElement) return;
+            
+            const spaceRect = spaceElement.getBoundingClientRect();
+            const x = spaceRect.left - boardRect.left + (spaceRect.width / 2) - 11;
+            const y = spaceRect.top - boardRect.top + (spaceRect.height / 2) - 11;
+
+            token.style.left = (x + (index * 5)) + 'px';
+            token.style.top = y + 'px';
+        }
+    });
+}
 </script>
 </body>
 </html>
