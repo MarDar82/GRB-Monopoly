@@ -1,465 +1,72 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GRB Monopoly</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --felt: #0f3d2e;
-            --felt-dark: #082018;
-            --cream: #f3ead4;
-            --cream-dark: #e6d8b8;
-            --ink: #241a12;
-            --gold: #c9a227;
-            --gold-light: #eecf74;
-            --brown: #8a5a3c;
-            --lightblue: #7ec8e3;
-            --pink: #e0699c;
-            --orange: #f2934a;
-            --red: #c1453a;
-            --yellow: #f0c94e;
-            --green: #3f8f5f;
-            --darkblue: #2c5aa0;
-            --zabka-blue: #00529c;
-            --zabka-yellow: #ffd400;
-        }
-
-        * { box-sizing: border-box; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background:
-                radial-gradient(circle at 50% 0%, #2a1c12 0%, #140d08 65%),
-                linear-gradient(#1b120b, #0c0805);
-            color: var(--cream);
-            display: flex; justify-content: center; align-items: center;
-            margin: 0; padding: 30px; flex-direction: column; min-height: 100vh;
-        }
-        .hidden { display: none !important; }
-
-        h2, h3 { font-family: 'Oswald', sans-serif; margin: 0; letter-spacing: 0.5px; }
-
-        /* --- TELEFON --- */
-        #phone-screen {
-            background: linear-gradient(160deg, #16493a, #0a2a20);
-            width: 350px; height: 420px;
-            border: 6px solid #120b06;
-            border-radius: 34px;
-            padding: 26px 22px; box-sizing: border-box;
-            display: flex; flex-direction: column; text-align: center;
-            margin-bottom: 34px;
-            box-shadow:
-                0 0 0 2px rgba(201,162,39,0.35),
-                0 25px 50px -12px rgba(0,0,0,0.7),
-                inset 0 1px 0 rgba(255,255,255,0.05);
-            position: relative;
-        }
-        #phone-screen::before {
-            content: "";
-            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-            width: 60px; height: 5px; border-radius: 3px;
-            background: rgba(0,0,0,0.4);
-        }
-
-        #login-screen h2 {
-            font-size: 28px; color: var(--gold-light); margin-bottom: 4px;
-            text-transform: uppercase; letter-spacing: 2px;
-            text-shadow: 0 2px 6px rgba(0,0,0,0.5);
-        }
-        #login-screen p { color: var(--cream-dark); font-size: 13px; margin: 6px 0 18px; }
-
-        input {
-            padding: 14px; font-size: 16px; border-radius: 12px;
-            border: 2px solid var(--gold); margin-bottom: 16px; text-align: center;
-            background: rgba(255,255,255,0.95); color: var(--ink); font-family: 'Inter', sans-serif;
-            font-weight: 600; width: 100%;
-        }
-        input::placeholder { color: #9a8f7a; font-weight: 400; }
-        input:focus { outline: none; border-color: var(--gold-light); box-shadow: 0 0 0 3px rgba(201,162,39,0.3); }
-
-        button {
-            background: linear-gradient(180deg, #e8c455, var(--gold));
-            color: #241a12; border: none; padding: 15px; font-size: 16px;
-            font-family: 'Oswald', sans-serif; font-weight: 600; letter-spacing: 0.5px;
-            text-transform: uppercase;
-            border-radius: 12px; cursor: pointer; width: 100%;
-            box-shadow: 0 4px 0 #8a6c14, 0 6px 12px rgba(0,0,0,0.35);
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
-        }
-        button:hover:not(:disabled) { transform: translateY(1px); box-shadow: 0 3px 0 #8a6c14, 0 5px 10px rgba(0,0,0,0.35); }
-        button:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 0 0 #8a6c14; }
-        button:disabled { background: #4a4a4a; color: #8a8a8a; cursor: not-allowed; box-shadow: none; }
-
-        #lobby { display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
-        #lobby h2 { color: var(--gold-light); font-size: 20px; text-transform: uppercase; margin-bottom: 10px; }
-        #players-list {
-            background: rgba(0,0,0,0.25); padding: 12px; border-radius: 14px;
-            flex-grow: 1; margin-bottom: 18px; overflow-y: auto; text-align: left;
-            border: 1px solid rgba(201,162,39,0.25);
-        }
-        .player-item {
-            background: linear-gradient(90deg, rgba(201,162,39,0.18), rgba(201,162,39,0.05));
-            margin: 6px 0; padding: 10px 12px; border-radius: 8px;
-            font-weight: 600; font-size: 14px; color: var(--cream);
-            border-left: 3px solid var(--gold);
-        }
-        #status { color: #a9c2b4; font-size: 11px; margin-top: 8px; letter-spacing: 0.3px; }
-
-        #game-controls h2 { color: var(--gold-light); font-size: 19px; text-transform: uppercase; margin-bottom: 10px; }
-        #game-controls h3 { color: var(--cream-dark); font-weight: 500; font-size: 14px; margin-bottom: 16px; }
-        #dice-result {
-            font-family: 'Oswald', sans-serif; font-size: 22px; font-weight: 700;
-            color: var(--ink); background: var(--gold-light);
-            padding: 2px 12px; border-radius: 8px; display: inline-block;
-            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.15);
-        }
-
-        /* --- PLANSZA --- */
-        #board-container { display: flex; justify-content: center; }
-        #board {
-            width: 640px; height: 640px;
-            display: grid;
-            grid-template-columns: 108px repeat(9, 1fr) 108px;
-            grid-template-rows: 108px repeat(9, 1fr) 108px;
-            background: var(--cream);
-            border: 10px solid var(--felt-dark);
-            border-radius: 6px;
-            position: relative;
-            box-shadow: 0 30px 60px -15px rgba(0,0,0,0.7), 0 0 0 3px var(--gold);
-        }
-        #board::before {
-            content: "GRB\A MONOPOLY";
-            white-space: pre;
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-8deg);
-            font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 46px;
-            text-align: center; line-height: 1.15;
-            color: transparent;
-            -webkit-text-stroke: 1.5px var(--gold);
-            opacity: 0.5;
-            letter-spacing: 3px;
-            pointer-events: none;
-            z-index: 0;
-        }
-        #board::after {
-            content: "";
-            position: absolute; inset: 108px;
-            background: var(--felt);
-            background-image:
-                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.04), transparent 70%);
-            border: 2px solid var(--gold);
-            z-index: 0;
-        }
-
-        .space {
-            border: 1px solid #c9bfa2;
-            display: flex; background-color: var(--cream); color: var(--ink);
-            overflow: hidden; position: relative; box-sizing: border-box;
-            z-index: 1;
-        }
-        .corner {
-            justify-content: center; align-items: center;
-            font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 12px; text-align: center;
-            padding: 6px; background: linear-gradient(160deg, var(--cream), var(--cream-dark));
-            letter-spacing: 0.5px;
-        }
-        .corner .text-container { position: relative; z-index: 1; }
-        #space-0 { color: var(--felt); }
-        #space-0::before { content: "\1F3C6"; display: block; font-size: 22px; margin-bottom: 4px; }
-        #space-10::before { content: "\1F512"; display: block; font-size: 20px; margin-bottom: 4px; }
-        #space-20::before { content: "\1F17F\FE0F"; display: block; font-size: 20px; margin-bottom: 4px; }
-        #space-30 { color: var(--red); }
-        #space-30::before { content: "\1F693"; display: block; font-size: 20px; margin-bottom: 4px; }
-
-        /* Układ boków */
-        .side-bottom { flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 6px; }
-        .side-top { flex-direction: column-reverse; justify-content: flex-end; align-items: center; padding-bottom: 6px; }
-        .side-left { flex-direction: row-reverse; justify-content: flex-end; align-items: center; padding-right: 6px; }
-        .side-right { flex-direction: row; justify-content: flex-end; align-items: center; padding-left: 6px; }
-
-        .property-color { flex-shrink: 0; box-shadow: inset 0 -2px 3px rgba(0,0,0,0.15); }
-        .side-bottom .property-color, .side-top .property-color { width: 100%; height: 26px; }
-        .side-left .property-color, .side-right .property-color { height: 100%; width: 26px; }
-
-        .text-wrapper { flex-grow: 1; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; overflow: hidden; }
-        .text-container {
-            font-family: 'Inter', sans-serif; font-weight: 700; font-size: 9.5px;
-            text-transform: uppercase; letter-spacing: 0.3px;
-            text-align: center; line-height: 1.15; padding: 3px; color: var(--ink);
-        }
-
-        .side-left .text-container { transform: rotate(90deg); white-space: nowrap; }
-        .side-right .text-container { transform: rotate(-90deg); white-space: nowrap; }
-
-        .zabka {
-            background: linear-gradient(180deg, var(--zabka-blue), #003b73);
-            color: var(--zabka-yellow); font-family: 'Oswald', sans-serif; font-weight: 700;
-            justify-content: center; align-items: center; font-size: 11px; text-align: center; padding: 4px;
-            border-top: 4px solid var(--zabka-yellow);
-        }
-        .zabka::before { content: "\1F6D2"; display: block; font-size: 16px; margin-bottom: 3px; }
-        .zabka .text-container { color: var(--zabka-yellow); }
-
-        .space:not(.corner):not(.zabka):not(.property) .text-container::before {
-            display: block; font-size: 14px; margin-bottom: 2px;
-        }
-        #space-2 .text-container::before, #space-17 .text-container::before, #space-33 .text-container::before { content: "\1F4B0"; }
-        #space-4 .text-container::before, #space-38 .text-container::before { content: "\1F9FE"; }
-        #space-7 .text-container::before, #space-22 .text-container::before, #space-36 .text-container::before { content: "\2753"; }
-        #space-12 .text-container::before { content: "\26A1"; }
-        #space-28 .text-container::before { content: "\1F6B0"; }
-
-        .brown .property-color { background: linear-gradient(180deg, #a2703f, var(--brown)); }
-        .lightblue .property-color { background: linear-gradient(180deg, #a3dcf2, var(--lightblue)); }
-        .pink .property-color { background: linear-gradient(180deg, #f091bb, var(--pink)); }
-        .orange .property-color { background: linear-gradient(180deg, #f7ac6e, var(--orange)); }
-        .red .property-color { background: linear-gradient(180deg, #d96a60, var(--red)); }
-        .yellow .property-color { background: linear-gradient(180deg, #f5da85, var(--yellow)); }
-        .green .property-color { background: linear-gradient(180deg, #63ab80, var(--green)); }
-        .darkblue .property-color { background: linear-gradient(180deg, #4c76b3, var(--darkblue)); }
-
-        .token {
-            width: 18px; height: 18px; border-radius: 50%; position: absolute; z-index: 100;
-            border: 2px solid rgba(0,0,0,0.6);
-            box-shadow: 0 3px 6px rgba(0,0,0,0.5), inset 0 2px 3px rgba(255,255,255,0.5);
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GRB Monopoly — Nowa plansza</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#171613; --paper:#f6efe0; --paper2:#efe3ca; --green:#173e32; --green2:#0e2c24;
+  --gold:#d0a84c; --line:#b8a889; --muted:#6d6558;
+  --brown:#86542f; --sky:#73bddd; --pink:#d66b98; --orange:#e58b43;
+  --red:#bd4b45; --yellow:#e4c245; --forest:#4f8b5b; --navy:#355b94;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#100f0c;color:var(--ink);font-family:'DM Sans',sans-serif}
+body{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:36px;background:
+ radial-gradient(circle at 50% 8%,#2c2921 0,#14130f 42%,#090908 100%)}
+.stage{width:min(94vw,1040px);display:flex;justify-content:center;align-items:center}
+.board-shell{width:960px;aspect-ratio:1;border-radius:18px;padding:16px;background:linear-gradient(145deg,#e1c575,#8b6a29 44%,#f0d487 100%);box-shadow:0 40px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.12) inset}
+.board{width:100%;height:100%;display:grid;grid-template-columns:112px repeat(9,1fr) 112px;grid-template-rows:112px repeat(9,1fr) 112px;position:relative;overflow:hidden;border:6px solid #241d13;background:var(--paper);box-shadow:inset 0 0 0 2px rgba(255,255,255,.45)}
+.board:before{content:"";position:absolute;left:112px;right:112px;top:112px;bottom:112px;background:linear-gradient(145deg,#1a4a3b,#0d2d25);z-index:0}
+.center{position:absolute;left:112px;right:112px;top:112px;bottom:112px;display:flex;align-items:center;justify-content:center;z-index:0}
+.center-card{width:72%;height:64%;border:2px solid rgba(208,168,76,.62);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transform:rotate(-5deg);position:relative;background:radial-gradient(circle at center,rgba(255,255,255,.05),transparent 70%);box-shadow:0 0 0 14px rgba(208,168,76,.04),inset 0 0 40px rgba(0,0,0,.08)}
+.center-card:before,.center-card:after{content:"✦";position:absolute;color:rgba(208,168,76,.55);font-size:22px}.center-card:before{top:16px;left:20px}.center-card:after{bottom:16px;right:20px}
+.brand-small{font-size:13px;letter-spacing:5px;text-transform:uppercase;color:#d9c98d;font-weight:700;margin-bottom:8px}
+.brand{font-family:Anton,sans-serif;letter-spacing:3px;font-size:72px;line-height:.88;color:#efe0a5;text-shadow:0 5px 0 rgba(0,0,0,.2)}
+.brand-sub{margin-top:15px;font-size:11px;letter-spacing:4px;color:#b9d0c5;text-transform:uppercase}
+.space{position:relative;z-index:2;border:1px solid var(--line);background:var(--paper);display:flex;overflow:hidden}
+.side-bottom{flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:7px}.side-top{flex-direction:column-reverse;align-items:center;justify-content:flex-end;padding-bottom:7px}.side-left{flex-direction:row-reverse;align-items:center;justify-content:flex-end;padding-right:7px}.side-right{flex-direction:row;align-items:center;justify-content:flex-end;padding-left:7px}
+.property-color{flex:none;box-shadow:inset 0 -2px 5px rgba(0,0,0,.16)}
+.side-bottom .property-color,.side-top .property-color{width:100%;height:26px}.side-left .property-color,.side-right .property-color{height:100%;width:26px}
+.text-wrap{flex:1;width:100%;display:flex;justify-content:center;align-items:center;padding:6px;min-width:0}.label{font-weight:800;font-size:9.5px;letter-spacing:.45px;text-transform:uppercase;line-height:1.1;text-align:center;word-break:break-word}.price{font-size:8px;font-weight:600;color:var(--muted);margin-top:3px}
+.side-left .label,.side-right .label{white-space:nowrap}.side-left .text-wrap{transform:rotate(90deg)}.side-right .text-wrap{transform:rotate(-90deg)}
+.corner{background:linear-gradient(145deg,#fbf5e8,#eadfc7);display:flex;align-items:center;justify-content:center;text-align:center;padding:8px}.corner .corner-inner{font-family:Anton,sans-serif;letter-spacing:1px;font-size:18px;line-height:1.05}.corner small{display:block;font:700 9px 'DM Sans',sans-serif;letter-spacing:1.5px;color:#6e6658;margin-top:5px}
+.start .corner-inner{color:#194f3d}.jail .corner-inner{color:#27231d}.parking .corner-inner{color:#314764}.gojail .corner-inner{color:#8f3f3b}
+.event .text-wrap:before{content:"?";display:block;font-family:Anton,sans-serif;font-size:22px;line-height:1;color:#b18a39;margin-bottom:2px;text-align:center}.tax .text-wrap:before{content:"₿";display:block;font-family:Anton,sans-serif;font-size:20px;line-height:1;color:#6e5a34;margin-bottom:2px;text-align:center}.utility .text-wrap:before{content:"◈";display:block;font-size:18px;line-height:1;color:#356c64;margin-bottom:2px;text-align:center}.shop{background:linear-gradient(145deg,#00589d,#063d71);color:#ffd935}.shop .text-wrap:before{content:"▦";display:block;font-size:18px;line-height:1;color:#ffd935;margin-bottom:2px;text-align:center}
+.brown .property-color{background:var(--brown)}.sky .property-color{background:var(--sky)}.pink .property-color{background:var(--pink)}.orange .property-color{background:var(--orange)}.red .property-color{background:var(--red)}.yellow .property-color{background:var(--yellow)}.forest .property-color{background:var(--forest)}.navy .property-color{background:var(--navy)}
+.token{position:absolute;z-index:9;width:22px;height:22px;border-radius:50%;border:3px solid #fff;box-shadow:0 3px 9px rgba(0,0,0,.5),inset 0 2px 3px rgba(255,255,255,.5)}
+@media(max-width:900px){.board-shell{width:92vw;padding:10px}.board{grid-template-columns:10.5% repeat(9,1fr) 10.5%;grid-template-rows:10.5% repeat(9,1fr) 10.5%}.board:before{left:10.5%;right:10.5%;top:10.5%;bottom:10.5%}.center{left:10.5%;right:10.5%;top:10.5%;bottom:10.5%}.brand{font-size:clamp(38px,8vw,72px)}.label{font-size:clamp(6px,1.15vw,9.5px)}.corner .corner-inner{font-size:clamp(9px,2vw,18px)}}
+</style>
 </head>
 <body>
-
-<!-- TELEFON -->
-<div id="phone-screen">
-    <div id="login-screen">
-        <h2>GRB Monopoly</h2>
-        <p>Wpisz swój nick:</p>
-        <input type="text" id="nickname-input" placeholder="np. Pesta" maxlength="12">
-        <button id="join-btn" onclick="joinGame()" disabled>Dołącz do gry</button>
-        <div id="status">Budzenie serwera... (może potrwać do minuty)</div>
+<div class="stage">
+  <div class="board-shell">
+    <div class="board" id="board">
+      <div class="center"><div class="center-card"><div class="brand-small">GRB ORIGINAL</div><div class="brand">MONOPOLY</div><div class="brand-sub">handel • ryzyko • zwycięstwo</div></div></div>
     </div>
-
-    <div id="lobby" class="hidden">
-        <div>
-            <h2>Pokój Gry</h2>
-            <div id="players-list"></div>
-        </div>
-        <button style="background: linear-gradient(180deg, #e8c455, var(--gold));" onclick="startGame()">Rozpocznij Grę</button>
-    </div>
-
-    <div id="game-controls" class="hidden">
-        <h2 id="turn-indicator">Tura: </h2>
-        <h3>Wynik: <span id="dice-result">-</span></h3>
-        <button id="roll-btn" onclick="rollDice()">🎲 Rzuć Kostką (1-12)</button>
-    </div>
+  </div>
 </div>
-
-<!-- PLANSZA -->
-<div id="board-container" class="hidden">
-    <div id="board"></div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
 <script>
-    const SERVER_URL = "https://grb-monopoly.onrender.com"; 
-    const socket = io(SERVER_URL);
-    let myNick = "";
-    let isMyTurn = false;
-
-    // Gdy serwer się obudzi i połączy
-    socket.on('connect', () => { 
-        document.getElementById('status').innerText = "Połączono! Możesz wpisać nick.";
-        document.getElementById('join-btn').disabled = false; // Odblokuj przycisk
-    });
-    
-    // Gdy serwer nie odpowiada
-    socket.on('connect_error', () => { 
-        document.getElementById('status').innerText = "Błąd: Serwer wyłączony lub się budzi...";
-        document.getElementById('join-btn').disabled = true; // Zablokuj przycisk
-    });
-
-    function joinGame() {
-        const nick = document.getElementById('nickname-input').value.trim();
-        if (nick.length > 0) {
-            myNick = nick;
-            socket.emit('joinGame', nick);
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('lobby').classList.remove('hidden');
-        }
-    }
-
-    socket.on('updatePlayers', (players) => {
-        const listDiv = document.getElementById('players-list');
-        listDiv.innerHTML = '';
-        players.forEach(player => {
-            const div = document.createElement('div');
-            div.className = 'player-item';
-            div.innerText = player.nick;
-            listDiv.appendChild(div);
-        });
-    });
-
-    function startGame() { socket.emit('startGame'); }
-
-    socket.on('gameStarted', (data) => {
-        document.getElementById('lobby').classList.add('hidden');
-        document.getElementById('game-controls').classList.remove('hidden');
-        document.getElementById('board-container').classList.remove('hidden');
-        generateBoard();
-        generateTokens(data.players);
-        isMyTurn = (data.turn === myNick);
-        updateTurnIndicator(data.turn);
-    });
-
-    function rollDice() {
-        if(!isMyTurn) return;
-        socket.emit('rollDice');
-    }
-
-    socket.on('diceRolled', (data) => {
-        document.getElementById('dice-result').innerText = data.roll;
-        updateTokens(data.players);
-        isMyTurn = (data.nextTurn === myNick);
-        updateTurnIndicator(data.nextTurn);
-    });
-
-    function updateTurnIndicator(turnNick) {
-        const btn = document.getElementById('roll-btn');
-        if(isMyTurn) {
-            document.getElementById('turn-indicator').innerText = "Twoja tura! (" + turnNick + ")";
-            btn.disabled = false;
-        } else {
-            document.getElementById('turn-indicator').innerText = "Tura gracza: " + turnNick;
-            btn.disabled = true;
-        }
-    }
-
-    const boardData = [
-        { name: "START", type: "corner" },
-        { name: "Dom Pesta", type: "property", color: "brown" },
-        { name: "Kasa Społ.", type: "action" },
-        { name: "Dom Natana", type: "property", color: "brown" },
-        { name: "Podatek", type: "action" },
-        { name: "Żabka 1", type: "zabka" },
-        { name: "Brenna", type: "property", color: "lightblue" },
-        { name: "Szansa", type: "action" },
-        { name: "Rybarzowice", type: "property", color: "lightblue" },
-        { name: "Przesieka", type: "property", color: "lightblue" },
-        { name: "WIĘZIENIE", type: "corner" },
-        { name: "Hotel 1", type: "property", color: "pink" },
-        { name: "Elektrownia", type: "action" },
-        { name: "Hotel 2", type: "property", color: "pink" },
-        { name: "mm", type: "property", color: "pink" },
-        { name: "Żabka 2", type: "zabka" },
-        { name: "Salon", type: "property", color: "orange" },
-        { name: "Kasa Społ.", type: "action" },
-        { name: "Sami swoi", type: "property", color: "orange" },
-        { name: "Pokój basen.", type: "property", color: "orange" },
-        { name: "PARKING", type: "corner" },
-        { name: "Dom Anusa", type: "property", color: "red" },
-        { name: "Szansa", type: "action" },
-        { name: "Dom Lewego", type: "property", color: "red" },
-        { name: "Dom Wacha", type: "property", color: "red" },
-        { name: "Żabka 3", type: "zabka" },
-        { name: "Borek", type: "property", color: "yellow" },
-        { name: "Los Santos", type: "property", color: "yellow" },
-        { name: "Wodociągi", type: "action" },
-        { name: "Plet", type: "property", color: "yellow" },
-        { name: "IDŹ DO WIĘZ.", type: "corner" },
-        { name: "Klub Platz", type: "property", color: "green" },
-        { name: "Piątek", type: "property", color: "green" },
-        { name: "Kasa Społ.", type: "action" },
-        { name: "Pewex", type: "property", color: "green" },
-        { name: "Żabka 4", type: "zabka" },
-        { name: "Szansa", type: "action" },
-        { name: "82", type: "property", color: "darkblue" },
-        { name: "Podatek Luks.", type: "action" },
-        { name: "Przystanek", type: "property", color: "darkblue" }
-    ];
-
-    const board = document.getElementById('board');
-    const tokenColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
-
-    function generateBoard() {
-        board.innerHTML = ''; 
-        for (let i = 0; i < 40; i++) {
-            const space = document.createElement('div');
-            space.className = 'space ';
-            space.id = 'space-' + i;
-            
-            let row, col, sideClass = "";
-            if (i <= 10) { row = 11; col = 11 - i; sideClass = "side-bottom"; } 
-            else if (i <= 20) { row = 11 - (i - 10); col = 1; sideClass = "side-left"; } 
-            else if (i <= 30) { row = 1; col = 1 + (i - 20); sideClass = "side-top"; } 
-            else { row = 1 + (i - 30); col = 11; sideClass = "side-right"; }
-
-            space.classList.add(sideClass);
-            space.style.gridRow = row;
-            space.style.gridColumn = col;
-
-            const data = boardData[i];
-            let content = '';
-            
-            if (data.type === 'corner') {
-                space.classList.add('corner');
-                content = `<div class="text-container">${data.name}</div>`;
-            } else if (data.type === 'zabka') {
-                space.classList.add('zabka');
-                content = `<div class="text-container">${data.name}</div>`;
-            } else if (data.type === 'property') {
-                space.classList.add(data.color);
-                let colorDiv = `<div class="property-color"></div>`;
-                let textDiv = `<div class="text-wrapper"><div class="text-container">${data.name}</div></div>`;
-                content = colorDiv + textDiv;
-            } else {
-                let textDiv = `<div class="text-wrapper"><div class="text-container">${data.name}</div></div>`;
-                content = textDiv;
-            }
-
-            space.innerHTML = content;
-            board.appendChild(space);
-        }
-    }
-
-    function generateTokens(players) {
-        document.querySelectorAll('.token').forEach(t => t.remove());
-        const startSpace = document.getElementById('space-0');
-        const spaceRect = startSpace.getBoundingClientRect();
-        const boardRect = board.getBoundingClientRect();
-        
-        const x = spaceRect.left - boardRect.left + (spaceRect.width / 2) - 8;
-        const y = spaceRect.top - boardRect.top + (spaceRect.height / 2) - 8;
-
-        players.forEach((player, index) => {
-            const token = document.createElement('div');
-            token.className = 'token';
-            token.id = 'token-' + player.nick;
-            token.style.backgroundColor = tokenColors[index % tokenColors.length];
-            token.style.left = (x + (index * 4)) + 'px'; 
-            token.style.top = y + 'px';
-            board.appendChild(token);
-        });
-    }
-
-    function updateTokens(players) {
-        const boardRect = board.getBoundingClientRect();
-
-        players.forEach((player, index) => {
-            const token = document.getElementById('token-' + player.nick);
-            if (token) {
-                const spaceElement = document.getElementById('space-' + player.position);
-                if (!spaceElement) return;
-                
-                const spaceRect = spaceElement.getBoundingClientRect();
-                const x = spaceRect.left - boardRect.left + (spaceRect.width / 2) - 8;
-                const y = spaceRect.top - boardRect.top + (spaceRect.height / 2) - 8;
-
-                token.style.left = (x + (index * 4)) + 'px';
-                token.style.top = y + 'px';
-            }
-        });
-    }
+const spaces=[
+ ['START','corner start'],['Dom Pesta','property brown'],['Kasa Społ.','event'],['Dom Natana','property brown'],['Podatek','tax'],['Żabka 1','shop'],['Brenna','property sky'],['Szansa','event'],['Rybarzowice','property sky'],['Przesieka','property sky'],
+ ['WIĘZIENIE','corner jail'],['Hotel 1','property pink'],['Elektrownia','utility'],['Hotel 2','property pink'],['mm','property pink'],['Żabka 2','shop'],['Salon','property orange'],['Kasa Społ.','event'],['Sami swoi','property orange'],['Pokój basen.','property orange'],
+ ['PARKING','corner parking'],['Dom Anusa','property red'],['Szansa','event'],['Dom Lewego','property red'],['Dom Wacha','property red'],['Żabka 3','shop'],['Borek','property yellow'],['Los Santos','property yellow'],['Wodociągi','utility'],['Plet','property yellow'],
+ ['IDŹ DO WIĘZ.','corner gojail'],['Klub Platz','property forest'],['Piątek','property forest'],['Kasa Społ.','event'],['Pewex','property forest'],['Żabka 4','shop'],['Szansa','event'],['82','property navy'],['Podatek Luks.','tax'],['Przystanek','property navy']
+];
+const board=document.getElementById('board');
+function add(i){
+ const [name,cls]=spaces[i];const el=document.createElement('div');el.className='space '+cls;
+ let row,col,side;
+ if(i<11){row=11;col=11-i;side='side-bottom'}else if(i<20){row=11-(i-10);col=1;side='side-left'}else if(i<31){row=1;col=1+(i-20);side='side-top'}else{row=1+(i-30);col=11;side='side-right'}
+ el.classList.add(side);el.style.gridRow=row;el.style.gridColumn=col;
+ if(cls.includes('corner')) el.innerHTML=`<div class="corner-inner">${name}<small>${i===0?'ZBIERZ GOTÓWKĘ':i===10?'ODPOCZNIJ':i===20?'CHWILA SPOKOJU':'KARA'}</small></div>`;
+ else el.innerHTML=`${cls.includes('property')?'<div class="property-color"></div>':''}<div class="text-wrap"><div><div class="label">${name}</div>${cls.includes('property')?'<div class="price">WŁASNOŚĆ</div>':''}</div></div>`;
+ board.appendChild(el);
+}
+spaces.forEach((_,i)=>add(i));
 </script>
 </body>
 </html>
