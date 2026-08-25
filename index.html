@@ -69,8 +69,8 @@
         <h2>GRB Monopoly</h2>
         <p>Wpisz swój nick:</p>
         <input type="text" id="nickname-input" placeholder="np. Pesta" maxlength="12">
-        <button onclick="joinGame()">Dołącz do gry</button>
-        <div id="status">Szukam serwera...</div>
+        <button id="join-btn" onclick="joinGame()" disabled>Dołącz do gry</button>
+        <div id="status">Budzenie serwera... (może potrwać do minuty)</div>
     </div>
 
     <div id="lobby" class="hidden">
@@ -100,8 +100,17 @@
     let myNick = "";
     let isMyTurn = false;
 
-    socket.on('connect', () => { document.getElementById('status').innerText = "Połączono! Wpisz nick."; });
-    socket.on('connect_error', () => { document.getElementById('status').innerText = "Błąd: Serwer wyłączony."; });
+    // Gdy serwer się obudzi i połączy
+    socket.on('connect', () => { 
+        document.getElementById('status').innerText = "Połączono! Możesz wpisać nick.";
+        document.getElementById('join-btn').disabled = false; // Odblokuj przycisk
+    });
+    
+    // Gdy serwer nie odpowiada
+    socket.on('connect_error', () => { 
+        document.getElementById('status').innerText = "Błąd: Serwer wyłączony lub się budzi...";
+        document.getElementById('join-btn').disabled = true; // Zablokuj przycisk
+    });
 
     function joinGame() {
         const nick = document.getElementById('nickname-input').value.trim();
