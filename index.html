@@ -3,118 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GRB Monopoly - Lobby</title>
+    <title>GRB Monopoly</title>
     <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #222;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        #phone-screen {
-            background-color: #111;
-            width: 350px;
-            height: 600px;
-            border: 5px solid black;
-            border-radius: 20px;
-            padding: 20px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            text-align: center;
-        }
-        input {
-            padding: 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            border: none;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        button {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 15px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-        }
-        button:hover { background-color: #218838; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #222; color: white; display: flex; justify-content: center; align-items: center; margin: 0; padding: 20px; }
+        .hidden { display: none !important; }
         
-        #lobby {
-            display: none;
-            flex-direction: column;
-            height: 100%;
-            justify-content: space-between;
+        /* --- TELEFON --- */
+        #phone-screen {
+            background-color: #111; width: 350px; height: 600px; border: 5px solid black; border-radius: 20px;
+            padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; text-align: center;
         }
-        #players-list {
-            background: #333;
-            padding: 15px;
-            border-radius: 10px;
-            flex-grow: 1;
-            margin-bottom: 20px;
-            overflow-y: auto;
-        }
-        .player-item {
-            background: #444;
-            margin: 5px 0;
-            padding: 10px;
-            border-radius: 5px;
-            border-left: 5px solid #f00;
-        }
-        #status {
-            color: #888;
-            font-size: 12px;
-            margin-top: 10px;
-        }
+        input { padding: 15px; font-size: 18px; border-radius: 10px; border: none; margin-bottom: 20px; text-align: center; }
+        button { background-color: #28a745; color: white; border: none; padding: 15px; font-size: 18px; border-radius: 10px; cursor: pointer; width: 100%; }
+        button:hover { background-color: #218838; }
+        button:disabled { background-color: #555; cursor: not-allowed; }
+        
+        #lobby { display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
+        #players-list { background: #333; padding: 15px; border-radius: 10px; flex-grow: 1; margin-bottom: 20px; overflow-y: auto; text-align: left; }
+        .player-item { background: #444; margin: 5px 0; padding: 10px; border-radius: 5px; }
+        #status { color: #888; font-size: 12px; margin-top: 10px; }
+        
+        /* --- PLANSZA --- */
+        #board-container { display: flex; gap: 30px; }
+        #board { width: 600px; height: 600px; display: grid; grid-template-columns: 100px repeat(9, 1fr) 100px; grid-template-rows: 100px repeat(9, 1fr) 100px; background-color: #fff; border: 2px solid #333; position: relative; }
+        .space { border: 1px solid #ccc; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; font-size: 9px; text-align: center; padding: 2px; position: relative; background-color: white; color: black; }
+        .corner { font-weight: bold; font-size: 10px; justify-content: center; }
+        .property-color { width: 100%; height: 20px; margin-bottom: 2px; }
+        .brown .property-color { background-color: #8B4513; }
+        .lightblue .property-color { background-color: #87CEEB; }
+        .pink .property-color { background-color: #FF69B4; }
+        .orange .property-color { background-color: #FFA500; }
+        .red .property-color { background-color: #FF0000; }
+        .yellow .property-color { background-color: #FFFF00; }
+        .green .property-color { background-color: #008000; }
+        .darkblue .property-color { background-color: #00008B; }
+        .zabka { background-color: #00529C; color: white; font-weight: bold; justify-content: center; }
+        
+        /* --- PIONKI --- */
+        .token { width: 15px; height: 15px; border-radius: 50%; position: absolute; transition: all 0.3s ease-in-out; z-index: 100; border: 1px solid black; }
     </style>
 </head>
 <body>
 
+<!-- TELEFON -->
 <div id="phone-screen">
-    <!-- Ekran Logowania -->
     <div id="login-screen">
         <h2>GRB Monopoly</h2>
         <p>Wpisz swój nick, aby dołączyć do gry:</p>
         <input type="text" id="nickname-input" placeholder="np. Pesta" maxlength="12">
-        <br>
         <button onclick="joinGame()">Dołącz do gry</button>
         <div id="status">Szukam serwera...</div>
     </div>
 
-    <!-- Pokój Oczekiwania (Lobby) -->
-    <div id="lobby">
+    <div id="lobby" class="hidden">
         <div>
             <h2>Pokój Gry</h2>
             <p>Gracze w lobby:</p>
             <div id="players-list"></div>
         </div>
-        <div>
-            <button style="background-color: #ffc107; color: black;" onclick="startGame()">Rozpocznij Grę</button>
-        </div>
+        <button style="background-color: #ffc107; color: black;" onclick="startGame()">Rozpocznij Grę (Host)</button>
+    </div>
+
+    <div id="game-controls" class="hidden">
+        <h2 id="turn-indicator">Tura: </h2>
+        <h3>Wynik rzutu: <span id="dice-result">-</span></h3>
+        <button id="roll-btn" onclick="rollDice()">Rzuć Kostką (1-12)</button>
+    </div>
+</div>
+
+<!-- PLANSZA -->
+<div id="board-container" class="hidden">
+    <div id="board">
+        <!-- Pionki pojawią się tutaj dynamicznie -->
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
-
 <script>
     const SERVER_URL = "https://grb-monopoly.onrender.com"; 
-    
     const socket = io(SERVER_URL);
     let myNick = "";
+    let isMyTurn = false;
 
-    socket.on('connect_error', () => {
-        document.getElementById('status').innerText = "Błąd: Serwer jest wyłączony.";
-    });
-    
     socket.on('connect', () => {
         document.getElementById('status').innerText = "Połączono z serwerem! Wpisz nick.";
+    });
+    socket.on('connect_error', () => {
+        document.getElementById('status').innerText = "Błąd: Serwer jest wyłączony.";
     });
 
     function joinGame() {
@@ -123,8 +98,8 @@
         if (nick.length > 0) {
             myNick = nick;
             socket.emit('joinGame', nick);
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('lobby').style.display = 'flex';
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('lobby').classList.remove('hidden');
         }
     }
 
@@ -140,9 +115,179 @@
     });
 
     function startGame() {
-        alert("Gra się rozpoczyna! (Na razie to tylko test lobby, w kolejnym kroku dodamy planszę)");
+        socket.emit('startGame');
     }
-</script>
 
+    socket.on('gameStarted', (data) => {
+        document.getElementById('lobby').classList.add('hidden');
+        document.getElementById('game-controls').classList.remove('hidden');
+        document.getElementById('board-container').classList.remove('hidden');
+        
+        generateBoard();
+        generateTokens(data.players);
+        
+        isMyTurn = (data.turn === myNick);
+        updateTurnIndicator(data.turn);
+    });
+
+    function rollDice() {
+        if(!isMyTurn) return;
+        socket.emit('rollDice');
+    }
+
+    socket.on('diceRolled', (data) => {
+        document.getElementById('dice-result').innerText = data.roll;
+        updateTokens(data.players);
+        
+        isMyTurn = (data.nextTurn === myNick);
+        updateTurnIndicator(data.nextTurn);
+    });
+
+    function updateTurnIndicator(turnNick) {
+        const btn = document.getElementById('roll-btn');
+        if(isMyTurn) {
+            document.getElementById('turn-indicator').innerText = "Twoja tura! (" + turnNick + ")";
+            btn.disabled = false;
+        } else {
+            document.getElementById('turn-indulator').innerText = "Tura gracza: " + turnNick;
+            document.getElementById('turn-indicator').innerText = "Tura gracza: " + turnNick;
+            btn.disabled = true;
+        }
+    }
+
+    // --- DANE PLANSZY ---
+    const boardData = [
+        { name: "START", type: "corner" },
+        { name: "Dom Pesta", type: "property", color: "brown" },
+        { name: "Kasa Społeczna", type: "action" },
+        { name: "Dom Natana", type: "property", color: "brown" },
+        { name: "Podatek", type: "action" },
+        { name: "Żabka 1", type: "zabka" },
+        { name: "Brenna", type: "property", color: "lightblue" },
+        { name: "Szansa", type: "action" },
+        { name: "Rybarzowice", type: "property", color: "lightblue" },
+        { name: "Przesieka", type: "property", color: "lightblue" },
+        { name: "WIĘZIENIE", type: "corner" },
+        { name: "Hotel pierwszy", type: "property", color: "pink" },
+        { name: "Elektrownia", type: "action" },
+        { name: "Hotel drugi", type: "property", color: "pink" },
+        { name: "mm", type: "property", color: "pink" },
+        { name: "Żabka 2", type: "zabka" },
+        { name: "Salon", type: "property", color: "orange" },
+        { name: "Kasa Społeczna", type: "action" },
+        { name: "Sami swoi", type: "property", color: "orange" },
+        { name: "Pokój basenowy", type: "property", color: "orange" },
+        { name: "PARKING", type: "corner" },
+        { name: "Dom Anusa", type: "property", color: "red" },
+        { name: "Szansa", type: "action" },
+        { name: "Dom Lewego", type: "property", color: "red" },
+        { name: "Dom Wacha", type: "property", color: "red" },
+        { name: "Żabka 3", type: "zabka" },
+        { name: "Borek", type: "property", color: "yellow" },
+        { name: "Los Santos", type: "property", color: "yellow" },
+        { name: "Wodociągi", type: "action" },
+        { name: "Plet", type: "property", color: "yellow" },
+        { name: "IDŹ DO WIĘZIENIA", type: "corner" },
+        { name: "Klub Platz", type: "property", color: "green" },
+        { name: "Piątek", type: "property", color: "green" },
+        { name: "Kasa Społeczna", type: "action" },
+        { name: "Pewex", type: "property", color: "green" },
+        { name: "Żabka 4", type: "zabka" },
+        { name: "Szansa", type: "action" },
+        { name: "82", type: "property", color: "darkblue" },
+        { name: "Podatek Luksusowy", type: "action" },
+        { name: "Przystanek", type: "property", color: "darkblue" }
+    ];
+
+    const board = document.getElementById('board');
+    const tokenColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+
+    function generateBoard() {
+        board.innerHTML = ''; // Czyści planszę na start
+        for (let i = 0; i < 40; i++) {
+            const space = document.createElement('div');
+            space.className = 'space';
+            space.id = 'space-' + i;
+            
+            let row, col, rotation = 0;
+            if (i < 11) { row = 11; col = 11 - i; } 
+            else if (i < 20) { row = 11 - (i - 10); col = 1; rotation = 90; } 
+            else if (i < 30) { row = 1; col = 2 + (i - 20); rotation = 180; } 
+            else { row = 2 + (i - 30); col = 11; rotation = 270; }
+
+            space.style.gridRow = row;
+            space.style.gridColumn = col;
+
+            const data = boardData[i];
+            if (data.type === 'corner') {
+                space.classList.add('corner');
+                space.innerHTML = `<div>${data.name}</div>`;
+            } else if (data.type === 'zabka') {
+                space.classList.add('zabka');
+                space.innerHTML = `<div>${data.name}</div>`;
+            } else if (data.type === 'property') {
+                space.classList.add(data.color);
+                space.innerHTML = `<div class="property-color"></div><div>${data.name}</div>`;
+            } else {
+                space.innerHTML = `<div>${data.name}</div>`;
+            }
+
+            if (rotation !== 0) space.style.transform = `rotate(${rotation}deg)`;
+            board.appendChild(space);
+        }
+    }
+
+    function generateTokens(players) {
+        // Usuń stare pionki
+        document.querySelectorAll('.token').forEach(t => t.remove());
+        
+        const boardRect = board.getBoundingClientRect();
+        const startSpace = document.getElementById('space-0');
+        const spaceRect = startSpace.getBoundingClientRect();
+        
+        const x = spaceRect.left - boardRect.left + (spaceRect.width / 2) - 7.5;
+        const y = spaceRect.top - boardRect.top + (spaceRect.height / 2) - 7.5;
+
+        players.forEach((player, index) => {
+            const token = document.createElement('div');
+            token.className = 'token';
+            token.id = 'token-' + player.nick;
+            token.style.backgroundColor = tokenColors[index % tokenColors.length];
+            token.style.left = (x + (index * 5)) + 'px'; // Rozsunięcie pionków na sobie
+            token.style.top = y + 'px';
+            board.appendChild(token);
+        });
+    }
+
+    function updateTokens(players) {
+        const boardRect = board.getBoundingClientRect();
+
+        players.forEach((player, index) => {
+            const token = document.getElementById('token-' + player.nick);
+            if (token) {
+                const spaceElement = document.getElementById('space-' + player.position);
+                if (!spaceElement) return;
+                
+                const spaceRect = spaceElement.getBoundingClientRect();
+                const x = spaceRect.left - boardRect.left + (spaceRect.width / 2) - 7.5;
+                const y = spaceRect.top - boardRect.top + (spaceRect.height / 2) - 7.5;
+
+                token.style.left = (x + (index * 5)) + 'px';
+                token.style.top = y + 'px';
+            }
+        });
+    }
+
+    // Aktualizuj pozycje pionków przy zmianie rozmiaru okna
+    window.addEventListener('resize', () => {
+        if(!document.getElementById('board-container').classList.contains('hidden')) {
+            // Bezpieczne wywołanie, by pionki nie uciekły po resizie
+            // W prawdziwej grze tu byśmy podali aktualne pozycje graczy, ale na razie zostawmy tak.
+        }
+    });
+
+</script>
+</body>
+</html>
 </body>
 </html>
