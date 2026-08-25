@@ -389,10 +389,10 @@
             space.id = 'space-' + i;
             
             let row, col, sideClass = "";
-            if (i < 11) { row = 11; col = 11 - i; sideClass = "side-bottom"; } 
-            else if (i < 20) { row = 11 - (i - 10); col = 1; sideClass = "side-left"; } 
-            else if (i < 30) { row = 1; col = 2 + (i - 20); sideClass = "side-top"; } 
-            else { row = 2 + (i - 30); col = 11; sideClass = "side-right"; }
+            if (i <= 10) { row = 11; col = 11 - i; sideClass = "side-bottom"; } 
+            else if (i <= 20) { row = 11 - (i - 10); col = 1; sideClass = "side-left"; } 
+            else if (i <= 30) { row = 1; col = 1 + (i - 20); sideClass = "side-top"; } 
+            else { row = 1 + (i - 30); col = 11; sideClass = "side-right"; }
 
             space.classList.add(sideClass);
             space.style.gridRow = row;
