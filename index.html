@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Grabiszynek Rift — plansza osiedlowa 3D</title>
+<title>Monopoly Znajomych — plansza 3D</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Space+Grotesk:wght@400;500;700&display=swap');
 
@@ -73,6 +73,7 @@ button{font-family:var(--body);cursor:pointer}
   letter-spacing:.02em;text-align:center;padding:4px 2px 0;text-transform:uppercase;
   color:#EDE4D2;
 }
+.tgroup{font-size:5.8px;line-height:1.05;text-align:center;opacity:.55;text-transform:uppercase;letter-spacing:.04em;padding-top:2px}
 .tprice{font-size:7.5px;margin-top:auto;padding-bottom:3px;color:rgba(233,223,201,.62);letter-spacing:.06em}
 .tglyph{font-size:20px;margin-top:6px;line-height:1}
 .tphoto{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.42}
@@ -201,9 +202,9 @@ textarea{min-height:110px;line-height:1.5;resize:vertical}
       <div id="deck">
         <div id="hub">
           <div class="rzeka"></div>
-          <div class="kicker">Wrocław · Osiedle</div>
-          <h1>Grabiszynek</h1>
-          <div class="sub">Rift osiedlowy · 1934–2026</div>
+          <div class="kicker">Gra dla znajomych</div>
+          <h1>Monopoly</h1>
+          <div class="sub">Wasze miejsca · Wasze historie</div>
         </div>
       </div>
       <div id="tokens"></div>
@@ -222,7 +223,7 @@ textarea{min-height:110px;line-height:1.5;resize:vertical}
 
     <div class="tabpane on" id="tab-gra">
       <div id="players"></div>
-      <div style="font-family:var(--display);font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.5;margin:14px 0 6px">Kronika osiedla</div>
+      <div style="font-family:var(--display);font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.5;margin:14px 0 6px">Historia gry</div>
       <div id="log"></div>
     </div>
 
@@ -248,92 +249,104 @@ textarea{min-height:110px;line-height:1.5;resize:vertical}
 
 <script>
 /* =========================================================
-   DANE PLANSZY — prawdziwe ulice i miejsca Grabiszynka
+   DANE PLANSZY — prywatna wersja Monopoly dla znajomych
    ========================================================= */
 const G={brazowy:'#8C6239',blekit:'#7FC7E8',rozowy:'#D97AA8',pomarancz:'#E8863F',
          czerwony:'#C0503C',zolty:'#E8C84A',zielony:'#4E9E62',granat:'#3C63C0'};
 
-function S(n,g,p,r,h,glyph){return{n,t:'ulica',g,p,r,h,glyph}}
+const GROUP_NAMES={
+  [G.brazowy]:'Tyniec Mały',
+  [G.blekit]:'Wyjazd',
+  [G.rozowy]:'Bulgaria',
+  [G.pomarancz]:'Szczawnica',
+  [G.czerwony]:'Domy',
+  [G.zolty]:'Lokacje',
+  [G.zielony]:'Miasto',
+  [G.granat]:'Legendy'
+};
+
+function S(n,g,p,r,h,glyph){return{n,t:'ulica',g,p,r,h,glyph,grupa:GROUP_NAMES[g]||''}}
 const FIELDS=[
- {n:'Start',t:'start',glyph:'⌂',sub:'al. Hallera · pobierz 200 zł'},
- S('Szlifierska',G.brazowy,60,[2,10,30,90,160,250],50,'⚒'),
- {n:'Kasa Osiedlowa',t:'kasa',glyph:'✉'},
- S('Pilnikarska',G.brazowy,60,[4,20,60,180,320,450],50,'⚒'),
- {n:'Opłata śmieciowa',t:'podatek',kwota:200,glyph:'♻',sub:'Ekosystem'},
- {n:'Pętla Grabiszynek',t:'kolej',p:200,glyph:'🚋'},
- S('Heblarska',G.blekit,100,[6,30,90,270,400,550],50,'🪚'),
- {n:'Wieści z Osiedla',t:'wiesci',glyph:'?'},
- S('Tokarska',G.blekit,100,[6,30,90,270,400,550],50,'🪚'),
- S('Stolarska',G.blekit,120,[8,40,100,300,450,600],50,'🪚'),
- {n:'Komisariat',t:'wiezienie',glyph:'⚑',sub:'tylko z wizytą'},
- S('Fiołkowa',G.rozowy,140,[10,50,150,450,625,750],100,'❀'),
- {n:'Trakcja MPK',t:'media',p:150,glyph:'⚡'},
- S('Nasturcjowa',G.rozowy,140,[10,50,150,450,625,750],100,'❀'),
- S('Chabrowa',G.rozowy,160,[12,60,180,500,700,900],100,'❀'),
- {n:'Grabiszyńska (Cmentarz)',t:'kolej',p:200,glyph:'🚋'},
- S('Słonecznikowa',G.pomarancz,180,[14,70,200,550,750,950],100,'☀'),
- {n:'Kasa Osiedlowa',t:'kasa',glyph:'✉'},
- S('Pierwiosnkowa',G.pomarancz,180,[14,70,200,550,750,950],100,'☀'),
- S('Różana',G.pomarancz,200,[16,80,220,600,800,1000],100,'☀'),
- {n:'Park Grabiszyński',t:'parking',glyph:'❦',sub:'darmowy postój'},
- S('Żeglarska',G.czerwony,220,[18,90,250,700,875,1050],150,'⚓'),
- {n:'Wieści z Osiedla',t:'wiesci',glyph:'?'},
- S('Podróżnicza',G.czerwony,220,[18,90,250,700,875,1050],150,'⚓'),
- S('Wędrowców',G.czerwony,240,[20,100,300,750,925,1100],150,'⚓'),
- {n:'Rondo Woźniaka',t:'kolej',p:200,glyph:'🚋'},
- S('Odkrywców',G.zolty,260,[22,110,330,800,975,1150],150,'✦'),
- S('Wynalazców',G.zolty,260,[22,110,330,800,975,1150],150,'✦'),
- {n:'Rzeka Grabiszynka',t:'media',p:150,glyph:'≈'},
- S('Pionierska',G.zolty,280,[24,120,360,850,1025,1200],150,'✦'),
- {n:'Kontrola biletów',t:'idz_wiezienie',glyph:'⚠',sub:'idziesz na komisariat'},
- S('Arctowskiego',G.zielony,300,[26,130,390,900,1100,1275],200,'🧭'),
- S('Domeyki',G.zielony,300,[26,130,390,900,1100,1275],200,'🧭'),
- {n:'Kasa Osiedlowa',t:'kasa',glyph:'✉'},
- S('Szolc-Rogozińskiego',G.zielony,320,[28,150,450,1000,1200,1400],200,'🧭'),
- {n:'Most Muchoborski',t:'kolej',p:200,glyph:'🚋'},
- {n:'Wieści z Osiedla',t:'wiesci',glyph:'?'},
- S('Ojca Beyzyma',G.granat,350,[35,175,500,1100,1300,1500],200,'✚'),
- {n:'Podatek od nieruchomości',t:'podatek',kwota:100,glyph:'§'},
- S('al. Hallera',G.granat,400,[50,200,600,1400,1700,2000],200,'✚'),
+ {n:'Start',t:'start',glyph:'⌂',sub:'Pobierz 200 zł'},
+ S('Dom Natana',G.brazowy,60,[2,10,30,90,160,250],50,'⌂'),
+ {n:'Kasa Społeczna',t:'kasa',glyph:'✉'},
+ S('Dom Pesta',G.brazowy,60,[4,20,60,180,320,450],50,'⌂'),
+ {n:'Podatek dochodowy',t:'podatek',kwota:200,glyph:'§',sub:'Zapłać 200 zł'},
+ {n:'Żabka 1',t:'kolej',p:200,glyph:'🐸'},
+ S('Brenna',G.blekit,100,[6,30,90,270,400,550],50,'⛰'),
+ {n:'Szansa',t:'wiesci',glyph:'?'},
+ S('Rybarzowice',G.blekit,100,[6,30,90,270,400,550],50,'⛰'),
+ S('Przesieka',G.blekit,120,[8,40,100,300,450,600],50,'⛰'),
+ {n:'Więzienie',t:'wiezienie',glyph:'⚑',sub:'tylko z wizytą'},
+ S('Hotel pierwszy',G.rozowy,140,[10,50,150,450,625,750],100,'🏨'),
+ {n:'Elektrownia',t:'media',p:150,glyph:'⚡'},
+ S('Hotel drugi',G.rozowy,140,[10,50,150,450,625,750],100,'🏨'),
+ S('mm',G.rozowy,160,[12,60,180,500,700,900],100,'🏨'),
+ {n:'Żabka 2',t:'kolej',p:200,glyph:'🐸'},
+ S('Salon',G.pomarancz,180,[14,70,200,550,750,950],100,'✂'),
+ {n:'Kasa Społeczna',t:'kasa',glyph:'✉'},
+ S('Sami swoi',G.pomarancz,180,[14,70,200,550,750,950],100,'★'),
+ S('Pokój basenowy',G.pomarancz,200,[16,80,220,600,800,1000],100,'♨'),
+ {n:'Darmowy Parking',t:'parking',glyph:'P',sub:'darmowy postój'},
+ S('Dom Anusa',G.czerwony,220,[18,90,250,700,875,1050],150,'⌂'),
+ {n:'Szansa',t:'wiesci',glyph:'?'},
+ S('Dom Lewego',G.czerwony,220,[18,90,250,700,875,1050],150,'⌂'),
+ S('Dom Wacha',G.czerwony,240,[20,100,300,750,925,1100],150,'⌂'),
+ {n:'Żabka 3',t:'kolej',p:200,glyph:'🐸'},
+ S('Borek',G.zolty,260,[22,110,330,800,975,1150],150,'◆'),
+ S('Los Santos',G.zolty,260,[22,110,330,800,975,1150],150,'◆'),
+ {n:'Wodociągi',t:'media',p:150,glyph:'≈'},
+ S('Plet',G.zolty,280,[24,120,360,850,1025,1200],150,'◆'),
+ {n:'Idź do więzienia',t:'idz_wiezienie',glyph:'⚠',sub:'bez przechodzenia przez START'},
+ S('klub platz',G.zielony,300,[26,130,390,900,1100,1275],200,'♣'),
+ S('piatak',G.zielony,300,[26,130,390,900,1100,1275],200,'♣'),
+ {n:'Kasa Społeczna',t:'kasa',glyph:'✉'},
+ S('pewex',G.zielony,320,[28,150,450,1000,1200,1400],200,'♣'),
+ {n:'Żabka 4',t:'kolej',p:200,glyph:'🐸'},
+ {n:'Szansa',t:'wiesci',glyph:'?'},
+ S('82',G.granat,350,[35,175,500,1100,1300,1500],200,'★'),
+ {n:'Podatek od luksusu',t:'podatek',kwota:100,glyph:'§'},
+ S('Przystanek',G.granat,400,[50,200,600,1400,1700,2000],200,'★'),
 ];
 
 const WIESCI=[
- {t:'Remont chodnika na Grabiszyńskiej. Objazd — cofasz się o 3 pola.',f:p=>moveBy(p,-3)},
- {t:'Rada Osiedla przyznała grant na podwórko. +100 zł.',f:p=>p.cash+=100},
- {t:'Linia 20 zjeżdża do zajezdni Borek. Jedziesz na pętlę Grabiszynek.',f:p=>moveTo(p,5,true)},
- {t:'Kontrola biletów w 133. Idziesz na komisariat.',f:p=>jail(p)},
- {t:'Wygrywasz turniej gier w Parku Grabiszyńskim. +150 zł.',f:p=>p.cash+=150},
- {t:'Mandat za parkowanie na Pilnikarskiej. −50 zł.',f:p=>p.cash-=50},
- {t:'Nadpłata za wywóz odpadów wraca do ciebie. +75 zł.',f:p=>p.cash+=75},
+ {t:'Cofasz się o 3 pola.',f:p=>moveBy(p,-3)},
+ {t:'Dostajesz premię. +100 zł.',f:p=>p.cash+=100},
+ {t:'Jedziesz do Żabki 1.',f:p=>moveTo(p,5,true)},
+ {t:'Idziesz do więzienia.',f:p=>jail(p)},
+ {t:'Wygrywasz zakład. +150 zł.',f:p=>p.cash+=150},
+ {t:'Płacisz mandat. −50 zł.',f:p=>p.cash-=50},
+ {t:'Zwrot nadpłaty. +75 zł.',f:p=>p.cash+=75},
  {t:'Wracasz na START. Pobierasz 200 zł.',f:p=>moveTo(p,0,true)},
- {t:'Grill sąsiedzki na Placu Bzowym — każdy dokłada ci 25 zł.',f:p=>collect(p,25)},
- {t:'Zima stulecia. Odśnieżanie: 40 zł za dom, 115 zł za hotel.',f:p=>repairs(p,40,115)},
- {t:'Przesiadka na Racławickiej — idziesz na Most Muchoborski.',f:p=>moveTo(p,35,true)},
- {t:'Awans na osiedlowym rankingu. Wychodzisz z komisariatu za darmo.',f:p=>p.pass++},
+ {t:'Każdy gracz daje ci 25 zł.',f:p=>collect(p,25)},
+ {t:'Remonty: 40 zł za dom, 115 zł za hotel.',f:p=>repairs(p,40,115)},
+ {t:'Jedziesz do Żabki 4.',f:p=>moveTo(p,35,true)},
+ {t:'Dostajesz kartę wyjścia z więzienia.',f:p=>p.pass++},
 ];
+
 const KASA=[
- {t:'Zwrot podatku od nieruchomości. +200 zł.',f:p=>p.cash+=200},
- {t:'Sprzedajesz rower na grupie osiedlowej. +50 zł.',f:p=>p.cash+=50},
- {t:'Składka na festyn na al. Hallera. −50 zł.',f:p=>p.cash-=50},
- {t:'Nagroda za najładniejszy ogródek przy Fiołkowej. +100 zł.',f:p=>p.cash+=100},
- {t:'Rachunek za ogrzewanie w kamienicy. −100 zł.',f:p=>p.cash-=100},
- {t:'Znajdujesz 20 zł na przystanku Grabiszyńska. +20 zł.',f:p=>p.cash+=20},
- {t:'Idziesz na komisariat, bez przechodzenia przez START.',f:p=>jail(p)},
- {t:'Wychodzisz z komisariatu za darmo — zachowaj tę kartę.',f:p=>p.pass++},
- {t:'Odszkodowanie po nawałnicy w parku. +120 zł.',f:p=>p.cash+=120},
- {t:'Remont dachu: 25 zł za dom, 100 zł za hotel.',f:p=>repairs(p,25,100)},
- {t:'Urodziny na osiedlu — każdy gracz daje ci 20 zł.',f:p=>collect(p,20)},
+ {t:'Zwrot podatku. +200 zł.',f:p=>p.cash+=200},
+ {t:'Sprzedajesz niepotrzebną rzecz. +50 zł.',f:p=>p.cash+=50},
+ {t:'Płacisz składkę. −50 zł.',f:p=>p.cash-=50},
+ {t:'Dostajesz nagrodę. +100 zł.',f:p=>p.cash+=100},
+ {t:'Rachunki. −100 zł.',f:p=>p.cash-=100},
+ {t:'Znajdujesz 20 zł. +20 zł.',f:p=>p.cash+=20},
+ {t:'Idziesz do więzienia bez przechodzenia przez START.',f:p=>jail(p)},
+ {t:'Wychodzisz z więzienia za darmo — zachowaj tę kartę.',f:p=>p.pass++},
+ {t:'Odszkodowanie. +120 zł.',f:p=>p.cash+=120},
+ {t:'Remonty: 25 zł za dom, 100 zł za hotel.',f:p=>repairs(p,25,100)},
+ {t:'Urodziny — każdy gracz daje ci 20 zł.',f:p=>collect(p,20)},
  {t:'Wracasz na START.',f:p=>moveTo(p,0,true)},
 ];
 
-/* postacie — oryginalne archetypy w duchu MOBA, osadzone na Grabiszynku */
+/* postacie — gracze i własne awatary */
 const CHAMPS=[
- {n:'Latarniczka z Hallera',r:'Wsparcie',c:'#F2A65A',op:'Zapala sodowe światło na całej alei — sąsiedzi płacą jej połowę czynszu.'},
- {n:'Motorniczy z Pętli',r:'Wojownik',c:'#45C7A8',op:'Zawraca na najmniejszej pętli we Wrocławiu i wraca z podwójną prędkością.'},
- {n:'Ogrodniczka z Fiołkowej',r:'Mag',c:'#D97AA8',op:'Zamienia przedwojenny ogródek w barierę z bzu i nasturcji.'},
- {n:'Kartograf Odkrywców',r:'Zwiadowca',c:'#7FC7E8',op:'Zna każdy skrót przez park między Odkrywców a Ojca Beyzyma.'},
- {n:'Blacharz z Podwórka',r:'Tank',c:'#C0503C',op:'Kryje drużynę za blachą z warsztatu przy Blacharskiej.'},
- {n:'Nocna Kurierka',r:'Zabójca',c:'#B18CE8',op:'Przecina Grabiszynkę o 3 w nocy i znika w promenadzie Wędrowców.'},
+ {n:'Gracz 1',r:'Gracz',c:'#F2A65A',op:'Wgraj zdjęcie i nadaj własną nazwę postaci.'},
+ {n:'Gracz 2',r:'Gracz',c:'#45C7A8',op:'Wgraj zdjęcie i nadaj własną nazwę postaci.'},
+ {n:'Gracz 3',r:'Gracz',c:'#D97AA8',op:'Wgraj zdjęcie i nadaj własną nazwę postaci.'},
+ {n:'Gracz 4',r:'Gracz',c:'#7FC7E8',op:'Wgraj zdjęcie i nadaj własną nazwę postaci.'},
+ {n:'Gracz 5',r:'Gracz',c:'#C0503C',op:'Wgraj zdjęcie i nadaj własną nazwę postaci.'},
+ {n:'Gracz 6',r:'Gracz',c:'#B18CE8',op:'Wgraj zdjęcie i nadaj własną nazwę postaci.'},
 ];
 
 /* =========================================================
@@ -367,6 +380,7 @@ FIELDS.forEach((f,i)=>{
     inner.innerHTML=band+
       (f.t==='ulica'?'':`<div class="tglyph">${f.glyph||''}</div>`)+
       `<div class="tname">${f.n}</div>`+
+      (f.t==='ulica'&&f.grupa?`<div class="tgroup">${f.grupa}</div>`:'')+
       (f.p?`<div class="tprice">${f.p} zł</div>`:(f.kwota?`<div class="tprice">${f.kwota} zł</div>`:''));
   }
   const photo=document.createElement('div'); photo.className='tphoto';
@@ -421,7 +435,7 @@ function newGame(n=4){
   FIELDS.forEach(f=>{f.owner=null;f.houses=0});
   turn=0;rolled=false;doubles=0;over=false;
   $('log').innerHTML='';
-  log('Nowa partia na Grabiszynku. Start przy <b>al. Hallera</b>.');
+  log('Nowa partia. Wszyscy zaczynają na <b>START</b>.');
   render(); fit();
 }
 function log(t){const d=document.createElement('div');d.innerHTML=t;$('log').prepend(d)}
@@ -434,7 +448,7 @@ function moveTo(p,idx,collectStart){
   p.pos=idx;
 }
 function moveBy(p,d){p.pos=(p.pos+d+40)%40}
-function jail(p){p.pos=10;p.jail=3;log(`<b>${p.n}</b> trafia na komisariat.`)}
+function jail(p){p.pos=10;p.jail=3;log(`<b>${p.n}</b> trafia do więzienia.`)}
 function collect(p,amt){P.forEach(q=>{if(q!==p&&!q.out){q.cash-=amt;p.cash+=amt}})}
 function repairs(p,h,ht){
   let s=0; p.own.forEach(i=>{const f=FIELDS[i];s+=f.houses===5?ht:f.houses*h});
@@ -504,13 +518,13 @@ function land(p){
     }
   }
   else if(f.t==='podatek'){p.cash-=f.kwota;log(`<b>${p.n}</b> płaci ${money(f.kwota)} — ${f.n}.`)}
-  else if(f.t==='idz_wiezienie'){jail(p);toast('Kontrola biletów. Idziesz na komisariat.')}
+  else if(f.t==='idz_wiezienie'){jail(p);toast('Idziesz do więzienia.')}
   else if(f.t==='wiesci'||f.t==='kasa'){
     const deck=f.t==='wiesci'?WIESCI:KASA;
     const c=deck[Math.floor(Math.random()*deck.length)];
     log(`<b>${f.n}:</b> ${c.t}`); toast(c.t); c.f(p);
   }
-  else if(f.t==='parking'){toast('Park Grabiszyński — postój bez opłat.')}
+  else if(f.t==='parking'){toast('Darmowy Parking — postój bez opłat.')}
   if(p.cash<0)bankrupt(p);
 }
 
@@ -520,7 +534,7 @@ function bankrupt(p){
   p.own=[];
   log(`<b>${p.n}</b> odpada z gry.`);
   const alive=P.filter(q=>!q.out);
-  if(alive.length===1){over=true;toast(`Zwycięstwo: <b>${alive[0].n}</b>`);log(`🏆 <b>${alive[0].n}</b> przejmuje całe osiedle.`)}
+  if(alive.length===1){over=true;toast(`Zwycięstwo: <b>${alive[0].n}</b>`);log(`🏆 <b>${alive[0].n}</b> wygrywa całą planszę.`)}
 }
 
 function buy(){
@@ -589,7 +603,7 @@ function renderPanel(){
       <div class="av" style="--pimg:${p.img?`url(${p.img})`:'none'}">${p.img?'':p.n[0]}</div>
       <div style="flex:1;min-width:0">
         <div class="nm">${p.n}</div>
-        <div class="rl">${p.r}${p.jail>0?' · komisariat':''}</div>
+        <div class="rl">${p.r}${p.jail>0?' · więzienie':''}</div>
         <div class="props">${p.own.length} nieruchomości${p.pass?' · karta wyjścia':''}</div>
       </div>
       <div class="cash">${money(p.cash)}</div>
@@ -614,21 +628,21 @@ function selectField(i){
       1 dom ${money(f.r[1])} · 2 ${money(f.r[2])} · 3 ${money(f.r[3])} · 4 ${money(f.r[4])} · hotel ${money(f.r[5])}<br>
       Koszt domu: ${money(f.h)} · zabudowa: ${f.houses===5?'hotel':f.houses+' dom(y)'}
     </div>`;
-  } else if(f.t==='kolej'){rows=`<div class="meta">Węzeł komunikacyjny · ${money(f.p)}<br>Czynsz 25 / 50 / 100 / 200 zł zależnie od liczby węzłów.</div>`}
+  } else if(f.t==='kolej'){rows=`<div class="meta">Żabka · ${money(f.p)}<br>Czynsz 25 / 50 / 100 / 200 zł zależnie od liczby posiadanych Żabek.</div>`}
   else if(f.t==='media'){rows=`<div class="meta">Infrastruktura · ${money(f.p)}<br>Czynsz: 4× oczka (jedna) lub 10× oczka (obie).</div>`}
   else if(f.t==='podatek'){rows=`<div class="meta">Opłata: ${money(f.kwota)}</div>`}
-  else rows=`<div class="meta">${f.sub||'Pole specjalne osiedla.'}</div>`;
+  else rows=`<div class="meta">${f.sub||'Pole specjalne.'}</div>`;
 
   $('tab-pole').innerHTML=`
     <div class="card">
       <div class="ph" style="--img:${f.img?`url(${f.img})`:'none'}">${f.img?'':'Brak zdjęcia — wgraj widok tego miejsca'}</div>
       <div class="bd">
         <h3>${f.n}</h3>
-        <div class="tag">${f.t}</div>${f.g?`<div class="tag" style="border-color:${f.g};color:${f.g}">grupa</div>`:''}
+        <div class="tag">${f.t}</div>${f.g?`<div class="tag" style="border-color:${f.g};color:${f.g}">${f.grupa}</div>`:''}
         ${own?`<div class="tag" style="border-color:${own.c};color:${own.c}">${own.n}</div>`:'<div class="tag">wolne</div>'}
         ${rows}
-        <label class="file">Wgraj zdjęcie z Grabiszynka<input type="file" accept="image/*" data-field="${i}"></label>
-        <div class="hint">Zdjęcie ląduje na kafelku planszy i na karcie pola. Najlepiej działa kadr kwadratowy: fasada, brama, zieleń.</div>
+        <label class="file">Wgraj zdjęcie miejsca<input type="file" accept="image/*" data-field="${i}"></label>
+        <div class="hint">Zdjęcie ląduje na kafelku planszy i na karcie pola. Najlepiej działa kadr kwadratowy.</div>
       </div>
     </div>`;
   $('tab-pole').querySelector('input[type=file]').addEventListener('change',ev=>{
@@ -687,11 +701,11 @@ function renderBrief(){
 POSTAĆ: ${p.n} — klasa: ${p.r}.
 PODOBIEŃSTWO: twarz z załączonego zdjęcia, stylizowana, lekko wyostrzone rysy. ${$('fCechy').value||'(dopisz cechy ze zdjęcia)'}
 ROLA W ŚWIECIE: ${p.op}
-STRÓJ: nawiązanie do przedwojennego osiedla robotniczego Grabiszynek we Wrocławiu — tynk, blacha, mosiądz, sodowe światło latarni; rzemieślnicze detale (narzędzia z ulic Szlifierskiej, Heblarskiej, Blacharskiej).
+STRÓJ: inspirowany prywatnym światem gry i wspólnymi historiami znajomych; charakterystyczne detale związane z wybraną postacią.
 POZA: dynamiczna, bohaterska, ciężar ciała na jednej nodze, wyraźna sylwetka czytelna z odległości.
-PALETA: ${p.c} jako akcent, głęboka zieleń parkowa, ciepły bursztyn latarni, kremowy tynk.
-PODSTAWKA: fragment chodnika z tabliczką ulicy „${$('fPole').value||'Grabiszynek'}”, trawa i liście z Parku Grabiszyńskiego.
-OŚWIETLENIE: nocne, boczne światło latarni, delikatna poświata wokół postaci.
+PALETA: ${p.c} jako główny akcent kolorystyczny, pozostałe kolory dopasowane do postaci.
+PODSTAWKA: fragment miejsca z tabliczką „${$('fPole').value||'Monopoly Znajomych'}”, z detalami nawiązującymi do wybranego pola.
+OŚWIETLENIE: efektowne, lekko filmowe, z delikatną poświatą wokół postaci.
 TŁO: przezroczyste lub jednolite, bez logotypów i znaków firmowych.`;
   };
   ['fSel','fCechy','fPole'].forEach(id=>$(id).addEventListener('input',upd));
