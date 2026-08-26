@@ -1,244 +1,717 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GRB Monopoly — Nowa plansza</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grabiszynek Rift — plansza osiedlowa 3D</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Space+Grotesk:wght@400;500;700&display=swap');
+
 :root{
-  --ink:#171613; --paper:#f6efe0; --paper2:#efe3ca; --green:#173e32; --green2:#0e2c24;
-  --gold:#d0a84c; --line:#b8a889; --muted:#6d6558;
-  --brown:#86542f; --sky:#73bddd; --pink:#d66b98; --orange:#e58b43;
-  --red:#bd4b45; --yellow:#e4c245; --forest:#4f8b5b; --navy:#355b94;
+  --noc:#0A1216;
+  --plansza:#122730;
+  --plansza-2:#0E1E25;
+  --tynk:#E9DFC9;
+  --latarnia:#F2A65A;
+  --rift:#45C7A8;
+  --cegla:#C0503C;
+  --linia:rgba(233,223,201,.16);
+  --display:'Oswald','Bahnschrift','DIN Alternate','Haettenschweiler',system-ui,sans-serif;
+  --body:'Space Grotesk',ui-sans-serif,system-ui,sans-serif;
 }
 *{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:#100f0c;color:var(--ink);font-family:'DM Sans',sans-serif}
-body{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:36px;gap:30px;flex-wrap:wrap;background:
- radial-gradient(circle at 50% 8%,#2c2921 0,#14130f 42%,#090908 100%)}
-
-/* --- TELEFON --- */
-.hidden { display: none !important; }
-#phone-screen {
-    background-color: #171613; width: 340px; min-height: 480px; border: 4px solid var(--gold); border-radius: 18px;
-    padding: 25px; box-sizing: border-box; display: flex; flex-direction: column; text-align: center;
-    color: var(--paper); font-family: 'DM Sans', sans-serif; box-shadow: 0 20px 40px rgba(0,0,0,.55);
+html,body{margin:0;height:100%}
+body{
+  background:
+    radial-gradient(1100px 700px at 22% -10%, #1B3A44 0%, transparent 60%),
+    radial-gradient(900px 600px at 90% 110%, #22303A 0%, transparent 55%),
+    var(--noc);
+  color:var(--tynk); font-family:var(--body); overflow:hidden;
 }
-#phone-screen h2 { font-family: 'Anton', sans-serif; color: var(--gold); letter-spacing: 2px; margin: 0 0 15px 0; }
-#phone-screen p { color: #b9d0c5; font-size: 14px; margin-bottom: 15px; }
-#phone-screen input { padding: 15px; font-size: 16px; border-radius: 8px; border: 2px solid var(--gold); background: #100f0c; color: var(--paper); margin-bottom: 15px; text-align: center; }
-#phone-screen button { background-color: var(--gold); color: var(--ink); border: none; padding: 15px; font-size: 16px; font-weight: 800; border-radius: 8px; cursor: pointer; width: 100%; letter-spacing: 1px; text-transform: uppercase; }
-#phone-screen button:hover { background-color: #b18a39; }
-#phone-screen button:disabled { background-color: #444; color: #888; cursor: not-allowed; border-color: #555; }
+button{font-family:var(--body);cursor:pointer}
 
-#lobby { display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
-#players-list { background: #100f0c; border: 1px solid var(--gold); padding: 15px; border-radius: 8px; flex-grow: 1; margin-bottom: 20px; overflow-y: auto; text-align: left; }
-.player-item { background: #2c2921; margin: 5px 0; padding: 10px; border-radius: 4px; color: var(--paper); border-left: 4px solid var(--gold); }
-#status { color: #b9d0c5; font-size: 12px; margin-top: 15px; font-style: italic; }
+/* ---------- układ ---------- */
+#app{display:flex;height:100vh;width:100vw}
+#stage{flex:1;position:relative;overflow:hidden;perspective:1600px;perspective-origin:50% 42%}
+#panel{
+  width:370px;flex:none;background:linear-gradient(180deg,#0D1D24,#0A1418);
+  border-left:1px solid var(--linia);display:flex;flex-direction:column;
+}
+@media (max-width:900px){
+  #app{flex-direction:column}
+  #panel{width:100%;height:46vh;border-left:none;border-top:1px solid var(--linia)}
+  #stage{height:54vh}
+}
 
-/* --- PLANSZA --- */
-.stage{width:min(94vw,1040px);display:flex;justify-content:center;align-items:center}
-.board-shell{width:960px;aspect-ratio:1;border-radius:18px;padding:16px;background:linear-gradient(145deg,#e1c575,#8b6a29 44%,#f0d487 100%);box-shadow:0 40px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.12) inset}
-.board{width:100%;height:100%;display:grid;grid-template-columns:112px repeat(9,1fr) 112px;grid-template-rows:112px repeat(9,1fr) 112px;position:relative;overflow:hidden;border:6px solid #241d13;background:var(--paper);box-shadow:inset 0 0 0 2px rgba(255,255,255,.45)}
-.board:before{content:"";position:absolute;left:112px;right:112px;top:112px;bottom:112px;background:linear-gradient(145deg,#1a4a3b,#0d2d25);z-index:0}
-.center{position:absolute;left:112px;right:112px;top:112px;bottom:112px;display:flex;align-items:center;justify-content:center;z-index:0}
-.center-card{width:72%;height:64%;border:2px solid rgba(208,168,76,.62);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transform:rotate(-5deg);position:relative;background:radial-gradient(circle at center,rgba(255,255,255,.05),transparent 70%);box-shadow:0 0 0 14px rgba(208,168,76,.04),inset 0 0 40px rgba(0,0,0,.08)}
-.center-card:before,.center-card:after{content:"✦";position:absolute;color:rgba(208,168,76,.55);font-size:22px}.center-card:before{top:16px;left:20px}.center-card:after{bottom:16px;right:20px}
-.brand-small{font-size:13px;letter-spacing:5px;text-transform:uppercase;color:#d9c98d;font-weight:700;margin-bottom:8px}
-.brand{font-family:Anton,sans-serif;letter-spacing:3px;font-size:72px;line-height:.88;color:#efe0a5;text-shadow:0 5px 0 rgba(0,0,0,.2)}
-.brand-sub{margin-top:15px;font-size:11px;letter-spacing:4px;color:#b9d0c5;text-transform:uppercase}
-.space{position:relative;z-index:2;border:1px solid var(--line);background:var(--paper);display:flex;overflow:hidden}
-.side-bottom{flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:7px}.side-top{flex-direction:column-reverse;align-items:center;justify-content:flex-end;padding-bottom:7px}.side-left{flex-direction:row-reverse;align-items:center;justify-content:flex-end;padding-right:7px}.side-right{flex-direction:row;align-items:center;justify-content:flex-end;padding-left:7px}
-.property-color{flex:none;box-shadow:inset 0 -2px 5px rgba(0,0,0,.16)}
-.side-bottom .property-color,.side-top .property-color{width:100%;height:26px}.side-left .property-color,.side-right .property-color{height:100%;width:26px}
-.text-wrap{flex:1;width:100%;display:flex;justify-content:center;align-items:center;padding:6px;min-width:0}.label{font-weight:800;font-size:9.5px;letter-spacing:.45px;text-transform:uppercase;line-height:1.1;text-align:center;word-break:break-word}.price{font-size:8px;font-weight:600;color:var(--muted);margin-top:3px}
-.side-left .label,.side-right .label{white-space:nowrap}.side-left .text-wrap{transform:rotate(90deg)}.side-right .text-wrap{transform:rotate(-90deg)}
-.corner{background:linear-gradient(145deg,#fbf5e8,#eadfc7);display:flex;align-items:center;justify-content:center;text-align:center;padding:8px}.corner .corner-inner{font-family:Anton,sans-serif;letter-spacing:1px;font-size:18px;line-height:1.05}.corner small{display:block;font:700 9px 'DM Sans',sans-serif;letter-spacing:1.5px;color:#6e6658;margin-top:5px}
-.start .corner-inner{color:#194f3d}.jail .corner-inner{color:#27231d}.parking .corner-inner{color:#314764}.gojail .corner-inner{color:#8f3f3b}
-.event .text-wrap:before{content:"?";display:block;font-family:Anton,sans-serif;font-size:22px;line-height:1;color:#b18a39;margin-bottom:2px;text-align:center}.tax .text-wrap:before{content:"₿";display:block;font-family:Anton,sans-serif;font-size:20px;line-height:1;color:#6e5a34;margin-bottom:2px;text-align:center}.utility .text-wrap:before{content:"◈";display:block;font-size:18px;line-height:1;color:#356c64;margin-bottom:2px;text-align:center}.shop{background:linear-gradient(145deg,#00589d,#063d71);color:#ffd935}.shop .text-wrap:before{content:"▦";display:block;font-size:18px;line-height:1;color:#ffd935;margin-bottom:2px;text-align:center}
-.brown .property-color{background:var(--brown)}.sky .property-color{background:var(--sky)}.pink .property-color{background:var(--pink)}.orange .property-color{background:var(--orange)}.red .property-color{background:var(--red)}.yellow .property-color{background:var(--yellow)}.forest .property-color{background:var(--forest)}.navy .property-color{background:var(--navy)}
-.token{position:absolute;z-index:9;width:22px;height:22px;border-radius:50%;border:3px solid #fff;box-shadow:0 3px 9px rgba(0,0,0,.5),inset 0 2px 3px rgba(255,255,255,.5)}
-@media(max-width:900px){.board-shell{width:92vw;padding:10px}.board{grid-template-columns:10.5% repeat(9,1fr) 10.5%;grid-template-rows:10.5% repeat(9,1fr) 10.5%}.board:before{left:10.5%;right:10.5%;top:10.5%;bottom:10.5%}.center{left:10.5%;right:10.5%;top:10.5%;bottom:10.5%}.brand{font-size:clamp(38px,8vw,72px)}.label{font-size:clamp(6px,1.15vw,9.5px)}.corner .corner-inner{font-size:clamp(9px,2vw,18px)}}
+/* ---------- scena 3D ---------- */
+#world{
+  position:absolute;left:50%;top:48%;width:776px;height:776px;
+  transform-style:preserve-3d;
+  transform:translate(-50%,-50%) scale(var(--zoom,.8)) rotateX(var(--tilt,56deg)) rotateZ(var(--rot,0deg));
+  transition:transform .12s linear;
+}
+.slab{position:absolute;inset:0;border-radius:10px;background:var(--plansza-2)}
+#deck{
+  position:absolute;inset:0;transform-style:preserve-3d;border-radius:10px;
+  background:
+    repeating-linear-gradient(48deg,rgba(233,223,201,.028) 0 2px,transparent 2px 9px),
+    radial-gradient(120% 90% at 50% 40%,#173039 0%, #0E1F27 70%);
+  box-shadow:0 60px 90px rgba(0,0,0,.6), inset 0 0 0 1px rgba(233,223,201,.10);
+}
+.tile{
+  position:absolute;background:linear-gradient(180deg,#16303A,#102028);
+  border:1px solid rgba(233,223,201,.13);overflow:hidden;
+}
+.tile .inner{
+  position:absolute;left:50%;top:50%;width:64px;height:100px;
+  display:flex;flex-direction:column;align-items:center;
+}
+.tile.corner .inner{width:100px;height:100px}
+.band{width:100%;height:15px;flex:none;border-bottom:1px solid rgba(0,0,0,.45)}
+.tname{
+  font-family:var(--display);font-weight:600;font-size:8.5px;line-height:1.05;
+  letter-spacing:.02em;text-align:center;padding:4px 2px 0;text-transform:uppercase;
+  color:#EDE4D2;
+}
+.tprice{font-size:7.5px;margin-top:auto;padding-bottom:3px;color:rgba(233,223,201,.62);letter-spacing:.06em}
+.tglyph{font-size:20px;margin-top:6px;line-height:1}
+.tphoto{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.42}
+.tile.owned{box-shadow:inset 0 0 14px var(--own,transparent)}
+.tile.here{border-color:var(--latarnia)}
+.tile.sel{border-color:var(--rift);box-shadow:inset 0 0 0 2px var(--rift)}
+.corner .cbig{font-family:var(--display);font-size:11px;letter-spacing:.06em;text-align:center;padding:6px 4px;text-transform:uppercase}
+.corner .csub{font-size:7.5px;opacity:.6;text-align:center;padding:0 6px}
+
+/* środek planszy */
+#hub{
+  position:absolute;left:100px;top:100px;width:576px;height:576px;
+  transform:translateZ(1px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  background:
+    radial-gradient(70% 70% at 50% 45%, rgba(69,199,168,.10), transparent 70%),
+    linear-gradient(155deg,#0F242C,#0B191F);
+  border:1px solid rgba(233,223,201,.10);
+}
+#hub .kicker{font-size:10px;letter-spacing:.44em;opacity:.5;text-transform:uppercase}
+#hub h1{
+  font-family:var(--display);font-weight:700;font-size:56px;margin:0;letter-spacing:.02em;
+  text-transform:uppercase;color:var(--tynk);text-shadow:0 0 26px rgba(69,199,168,.28);
+}
+#hub .sub{font-size:11px;letter-spacing:.3em;color:var(--latarnia);text-transform:uppercase}
+#hub .rzeka{
+  position:absolute;left:0;right:0;top:56%;height:46px;
+  background:linear-gradient(180deg,transparent,rgba(69,199,168,.13),transparent);
+  transform:rotate(-7deg);
+}
+
+/* pionki i domki */
+#tokens{position:absolute;inset:0;transform-style:preserve-3d;pointer-events:none}
+.tok{position:absolute;transform-style:preserve-3d;transition:left .16s linear, top .16s linear}
+.tok .bill{
+  transform:rotateZ(calc(-1 * var(--rot,0deg))) rotateX(calc(-1 * var(--tilt,56deg)));
+  transform-origin:50% 100%;
+}
+.pawn .art{
+  width:30px;height:38px;border-radius:15px 15px 6px 6px;
+  border:2px solid var(--pc,#fff);background:#0B1A20 var(--pimg,none);
+  background-size:cover;background-position:center top;
+  display:flex;align-items:flex-end;justify-content:center;
+  box-shadow:0 0 16px var(--pc,#fff), 0 8px 14px rgba(0,0,0,.55);
+  font-family:var(--display);font-size:13px;color:var(--pc,#fff);
+}
+.pawn .ring{
+  position:absolute;left:50%;bottom:-4px;width:26px;height:9px;margin-left:-13px;
+  border-radius:50%;background:radial-gradient(closest-side,var(--pc,#fff),transparent 75%);opacity:.75;
+}
+.house .art{width:11px;height:14px;background:var(--rift);border:1px solid #0A1216;border-radius:2px 2px 0 0;box-shadow:0 4px 8px rgba(0,0,0,.5)}
+.hotel .art{width:20px;height:18px;background:var(--cegla);border:1px solid #0A1216;border-radius:2px;box-shadow:0 5px 10px rgba(0,0,0,.5)}
+
+/* ---------- panel ---------- */
+#tabs{display:flex;border-bottom:1px solid var(--linia);flex:none}
+#tabs button{
+  flex:1;background:none;border:0;color:rgba(233,223,201,.5);padding:12px 4px;
+  font-family:var(--display);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  border-bottom:2px solid transparent;
+}
+#tabs button.on{color:var(--tynk);border-bottom-color:var(--latarnia)}
+.tabpane{display:none;padding:14px;overflow-y:auto;flex:1}
+.tabpane.on{display:block}
+
+.pl{border:1px solid var(--linia);border-radius:10px;padding:10px;margin-bottom:9px;display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.02)}
+.pl.turn{border-color:var(--latarnia);background:rgba(242,166,90,.07)}
+.pl.out{opacity:.35}
+.av{width:44px;height:52px;border-radius:8px;border:2px solid var(--pc);background:#0B1A20 var(--pimg,none);background-size:cover;background-position:center top;flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--display);color:var(--pc)}
+.pl .nm{font-family:var(--display);font-size:14px;letter-spacing:.04em;text-transform:uppercase}
+.pl .rl{font-size:10px;opacity:.55;letter-spacing:.1em;text-transform:uppercase}
+.pl .cash{font-family:var(--display);font-size:17px;color:var(--latarnia)}
+.pl .props{font-size:10px;opacity:.6;margin-top:2px}
+
+#controls{flex:none;border-top:1px solid var(--linia);padding:12px;display:flex;flex-direction:column;gap:9px;background:rgba(0,0,0,.25)}
+.row{display:flex;gap:8px}
+.btn{
+  flex:1;background:linear-gradient(180deg,#1B3B46,#12262E);color:var(--tynk);
+  border:1px solid rgba(233,223,201,.2);border-radius:8px;padding:11px 8px;
+  font-family:var(--display);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+}
+.btn:hover:not(:disabled){border-color:var(--rift);color:#fff}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.hot{background:linear-gradient(180deg,#E8973F,#C2762C);color:#1A1005;border-color:#F6BE7C}
+.dice{display:flex;gap:8px;align-items:center;justify-content:center}
+.die{
+  width:40px;height:40px;border-radius:9px;background:var(--tynk);color:#0B1418;
+  font-family:var(--display);font-size:22px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 12px rgba(0,0,0,.5);
+}
+.die.spin{animation:sp .5s linear}
+@keyframes sp{from{transform:rotate(0) scale(.8)}to{transform:rotate(360deg) scale(1)}}
+
+#log{font-size:11.5px;line-height:1.5}
+#log div{padding:5px 0;border-bottom:1px dashed rgba(233,223,201,.1)}
+#log b{color:var(--latarnia);font-weight:500}
+
+.card{border:1px solid var(--linia);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.card .ph{height:120px;background:#0B1A20 var(--img,none);background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:.9;border-bottom:1px solid var(--linia)}
+.card .bd{padding:11px}
+.card h3{font-family:var(--display);margin:0 0 4px;font-size:16px;letter-spacing:.04em;text-transform:uppercase}
+.meta{font-size:11px;opacity:.65;line-height:1.6}
+label.file{display:block;border:1px dashed rgba(233,223,201,.3);border-radius:8px;padding:9px;text-align:center;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin-top:8px}
+label.file:hover{border-color:var(--rift);color:#fff}
+label.file input{display:none}
+input[type=text],textarea,select{
+  width:100%;background:#0B1A20;border:1px solid var(--linia);border-radius:7px;
+  color:var(--tynk);padding:8px;font-family:var(--body);font-size:12px;margin-top:6px;
+}
+textarea{min-height:110px;line-height:1.5;resize:vertical}
+.hint{font-size:10.5px;opacity:.5;line-height:1.55;margin-top:8px}
+.tag{display:inline-block;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--linia);border-radius:99px;padding:3px 8px;margin:0 4px 4px 0;opacity:.75}
+#hudhint{position:absolute;left:14px;bottom:12px;font-size:10.5px;opacity:.4;letter-spacing:.08em;pointer-events:none}
+#toast{
+  position:absolute;left:50%;top:18px;transform:translateX(-50%);
+  background:rgba(10,18,22,.94);border:1px solid var(--latarnia);border-radius:10px;
+  padding:12px 18px;max-width:420px;text-align:center;font-size:13px;line-height:1.45;
+  opacity:0;transition:opacity .25s;pointer-events:none;
+}
+#toast.on{opacity:1}
 </style>
 </head>
 <body>
-
-<!-- TELEFON -->
-<div id="phone-screen">
-    <div id="login-screen">
-        <h2>GRB Monopoly</h2>
-        <p>Wpisz swój nick, aby dołączyć do gry:</p>
-        <input type="text" id="nickname-input" placeholder="np. Pesta" maxlength="12">
-        <button id="join-btn" onclick="joinGame()" disabled>Dołącz do gry</button>
-        <div id="status">Budzenie serwera... (może potrwać do minuty)</div>
-    </div>
-
-    <div id="lobby" class="hidden">
-        <div>
-            <h2>Pokój Gry</h2>
-            <div id="players-list"></div>
+<div id="app">
+  <div id="stage">
+    <div id="world">
+      <div id="deck">
+        <div id="hub">
+          <div class="rzeka"></div>
+          <div class="kicker">Wrocław · Osiedle</div>
+          <h1>Grabiszynek</h1>
+          <div class="sub">Rift osiedlowy · 1934–2026</div>
         </div>
-        <button style="background-color: #d0a84c; color: #171613;" onclick="startGame()">Rozpocznij Grę</button>
+      </div>
+      <div id="tokens"></div>
+    </div>
+    <div id="hudhint">Przeciągnij, żeby obrócić planszę · kółko myszy = zoom</div>
+    <div id="toast"></div>
+  </div>
+
+  <div id="panel">
+    <div id="tabs">
+      <button class="on" data-tab="gra">Gra</button>
+      <button data-tab="pole">Pole</button>
+      <button data-tab="post">Postacie</button>
+      <button data-tab="figu">Figurki</button>
     </div>
 
-    <div id="game-controls" class="hidden">
-        <h2 id="turn-indicator">Tura: </h2>
-        <h3 style="color: #d0a84c;">Wynik: <span id="dice-result">-</span></h3>
-        <button id="roll-btn" onclick="rollDice()">Rzuć Kostką (1-12)</button>
+    <div class="tabpane on" id="tab-gra">
+      <div id="players"></div>
+      <div style="font-family:var(--display);font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.5;margin:14px 0 6px">Kronika osiedla</div>
+      <div id="log"></div>
     </div>
-</div>
 
-<!-- PLANSZA -->
-<div class="stage hidden" id="board-stage">
-  <div class="board-shell">
-    <div class="board" id="board">
-      <div class="center"><div class="center-card"><div class="brand-small">GRB ORIGINAL</div><div class="brand">MONOPOLY</div><div class="brand-sub">handel • ryzyko • zwycięstwo</div></div></div>
+    <div class="tabpane" id="tab-pole"></div>
+    <div class="tabpane" id="tab-post"></div>
+    <div class="tabpane" id="tab-figu"></div>
+
+    <div id="controls">
+      <div class="dice"><div class="die" id="d1">–</div><div class="die" id="d2">–</div>
+        <div style="font-size:11px;opacity:.6;letter-spacing:.1em" id="turninfo">Tura: —</div></div>
+      <div class="row">
+        <button class="btn hot" id="bRoll">Rzuć kośćmi</button>
+        <button class="btn" id="bBuy" disabled>Kup</button>
+      </div>
+      <div class="row">
+        <button class="btn" id="bBuild" disabled>Postaw dom</button>
+        <button class="btn" id="bEnd" disabled>Koniec tury</button>
+      </div>
+      <div class="row"><button class="btn" id="bNew">Nowa gra</button></div>
     </div>
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
 <script>
-// --- DANE PLANSZY ---
-const spaces=[
- ['START','corner start'],['Dom Pesta','property brown'],['Kasa Społ.','event'],['Dom Natana','property brown'],['Podatek','tax'],['Żabka 1','shop'],['Brenna','property sky'],['Szansa','event'],['Rybarzowice','property sky'],['Przesieka','property sky'],
- ['WIĘZIENIE','corner jail'],['Hotel 1','property pink'],['Elektrownia','utility'],['Hotel 2','property pink'],['mm','property pink'],['Żabka 2','shop'],['Salon','property orange'],['Kasa Społ.','event'],['Sami swoi','property orange'],['Pokój basen.','property orange'],
- ['PARKING','corner parking'],['Dom Anusa','property red'],['Szansa','event'],['Dom Lewego','property red'],['Dom Wacha','property red'],['Żabka 3','shop'],['Borek','property yellow'],['Los Santos','property yellow'],['Wodociągi','utility'],['Plet','property yellow'],
- ['IDŹ DO WIĘZ.','corner gojail'],['Klub Platz','property forest'],['Piątek','property forest'],['Kasa Społ.','event'],['Pewex','property forest'],['Żabka 4','shop'],['Szansa','event'],['82','property navy'],['Podatek Luks.','tax'],['Przystanek','property navy']
+/* =========================================================
+   DANE PLANSZY — prawdziwe ulice i miejsca Grabiszynka
+   ========================================================= */
+const G={brazowy:'#8C6239',blekit:'#7FC7E8',rozowy:'#D97AA8',pomarancz:'#E8863F',
+         czerwony:'#C0503C',zolty:'#E8C84A',zielony:'#4E9E62',granat:'#3C63C0'};
+
+function S(n,g,p,r,h,glyph){return{n,t:'ulica',g,p,r,h,glyph}}
+const FIELDS=[
+ {n:'Start',t:'start',glyph:'⌂',sub:'al. Hallera · pobierz 200 zł'},
+ S('Szlifierska',G.brazowy,60,[2,10,30,90,160,250],50,'⚒'),
+ {n:'Kasa Osiedlowa',t:'kasa',glyph:'✉'},
+ S('Pilnikarska',G.brazowy,60,[4,20,60,180,320,450],50,'⚒'),
+ {n:'Opłata śmieciowa',t:'podatek',kwota:200,glyph:'♻',sub:'Ekosystem'},
+ {n:'Pętla Grabiszynek',t:'kolej',p:200,glyph:'🚋'},
+ S('Heblarska',G.blekit,100,[6,30,90,270,400,550],50,'🪚'),
+ {n:'Wieści z Osiedla',t:'wiesci',glyph:'?'},
+ S('Tokarska',G.blekit,100,[6,30,90,270,400,550],50,'🪚'),
+ S('Stolarska',G.blekit,120,[8,40,100,300,450,600],50,'🪚'),
+ {n:'Komisariat',t:'wiezienie',glyph:'⚑',sub:'tylko z wizytą'},
+ S('Fiołkowa',G.rozowy,140,[10,50,150,450,625,750],100,'❀'),
+ {n:'Trakcja MPK',t:'media',p:150,glyph:'⚡'},
+ S('Nasturcjowa',G.rozowy,140,[10,50,150,450,625,750],100,'❀'),
+ S('Chabrowa',G.rozowy,160,[12,60,180,500,700,900],100,'❀'),
+ {n:'Grabiszyńska (Cmentarz)',t:'kolej',p:200,glyph:'🚋'},
+ S('Słonecznikowa',G.pomarancz,180,[14,70,200,550,750,950],100,'☀'),
+ {n:'Kasa Osiedlowa',t:'kasa',glyph:'✉'},
+ S('Pierwiosnkowa',G.pomarancz,180,[14,70,200,550,750,950],100,'☀'),
+ S('Różana',G.pomarancz,200,[16,80,220,600,800,1000],100,'☀'),
+ {n:'Park Grabiszyński',t:'parking',glyph:'❦',sub:'darmowy postój'},
+ S('Żeglarska',G.czerwony,220,[18,90,250,700,875,1050],150,'⚓'),
+ {n:'Wieści z Osiedla',t:'wiesci',glyph:'?'},
+ S('Podróżnicza',G.czerwony,220,[18,90,250,700,875,1050],150,'⚓'),
+ S('Wędrowców',G.czerwony,240,[20,100,300,750,925,1100],150,'⚓'),
+ {n:'Rondo Woźniaka',t:'kolej',p:200,glyph:'🚋'},
+ S('Odkrywców',G.zolty,260,[22,110,330,800,975,1150],150,'✦'),
+ S('Wynalazców',G.zolty,260,[22,110,330,800,975,1150],150,'✦'),
+ {n:'Rzeka Grabiszynka',t:'media',p:150,glyph:'≈'},
+ S('Pionierska',G.zolty,280,[24,120,360,850,1025,1200],150,'✦'),
+ {n:'Kontrola biletów',t:'idz_wiezienie',glyph:'⚠',sub:'idziesz na komisariat'},
+ S('Arctowskiego',G.zielony,300,[26,130,390,900,1100,1275],200,'🧭'),
+ S('Domeyki',G.zielony,300,[26,130,390,900,1100,1275],200,'🧭'),
+ {n:'Kasa Osiedlowa',t:'kasa',glyph:'✉'},
+ S('Szolc-Rogozińskiego',G.zielony,320,[28,150,450,1000,1200,1400],200,'🧭'),
+ {n:'Most Muchoborski',t:'kolej',p:200,glyph:'🚋'},
+ {n:'Wieści z Osiedla',t:'wiesci',glyph:'?'},
+ S('Ojca Beyzyma',G.granat,350,[35,175,500,1100,1300,1500],200,'✚'),
+ {n:'Podatek od nieruchomości',t:'podatek',kwota:100,glyph:'§'},
+ S('al. Hallera',G.granat,400,[50,200,600,1400,1700,2000],200,'✚'),
 ];
 
-const board=document.getElementById('board');
+const WIESCI=[
+ {t:'Remont chodnika na Grabiszyńskiej. Objazd — cofasz się o 3 pola.',f:p=>moveBy(p,-3)},
+ {t:'Rada Osiedla przyznała grant na podwórko. +100 zł.',f:p=>p.cash+=100},
+ {t:'Linia 20 zjeżdża do zajezdni Borek. Jedziesz na pętlę Grabiszynek.',f:p=>moveTo(p,5,true)},
+ {t:'Kontrola biletów w 133. Idziesz na komisariat.',f:p=>jail(p)},
+ {t:'Wygrywasz turniej gier w Parku Grabiszyńskim. +150 zł.',f:p=>p.cash+=150},
+ {t:'Mandat za parkowanie na Pilnikarskiej. −50 zł.',f:p=>p.cash-=50},
+ {t:'Nadpłata za wywóz odpadów wraca do ciebie. +75 zł.',f:p=>p.cash+=75},
+ {t:'Wracasz na START. Pobierasz 200 zł.',f:p=>moveTo(p,0,true)},
+ {t:'Grill sąsiedzki na Placu Bzowym — każdy dokłada ci 25 zł.',f:p=>collect(p,25)},
+ {t:'Zima stulecia. Odśnieżanie: 40 zł za dom, 115 zł za hotel.',f:p=>repairs(p,40,115)},
+ {t:'Przesiadka na Racławickiej — idziesz na Most Muchoborski.',f:p=>moveTo(p,35,true)},
+ {t:'Awans na osiedlowym rankingu. Wychodzisz z komisariatu za darmo.',f:p=>p.pass++},
+];
+const KASA=[
+ {t:'Zwrot podatku od nieruchomości. +200 zł.',f:p=>p.cash+=200},
+ {t:'Sprzedajesz rower na grupie osiedlowej. +50 zł.',f:p=>p.cash+=50},
+ {t:'Składka na festyn na al. Hallera. −50 zł.',f:p=>p.cash-=50},
+ {t:'Nagroda za najładniejszy ogródek przy Fiołkowej. +100 zł.',f:p=>p.cash+=100},
+ {t:'Rachunek za ogrzewanie w kamienicy. −100 zł.',f:p=>p.cash-=100},
+ {t:'Znajdujesz 20 zł na przystanku Grabiszyńska. +20 zł.',f:p=>p.cash+=20},
+ {t:'Idziesz na komisariat, bez przechodzenia przez START.',f:p=>jail(p)},
+ {t:'Wychodzisz z komisariatu za darmo — zachowaj tę kartę.',f:p=>p.pass++},
+ {t:'Odszkodowanie po nawałnicy w parku. +120 zł.',f:p=>p.cash+=120},
+ {t:'Remont dachu: 25 zł za dom, 100 zł za hotel.',f:p=>repairs(p,25,100)},
+ {t:'Urodziny na osiedlu — każdy gracz daje ci 20 zł.',f:p=>collect(p,20)},
+ {t:'Wracasz na START.',f:p=>moveTo(p,0,true)},
+];
 
-// --- GENEROWANIE PLANSZY ---
-function add(i){
- const [name,cls]=spaces[i];const el=document.createElement('div');el.className='space '+cls;
- el.id = 'space-' + i; // DODANO ID DO POLA dla pionków
- let row,col,side;
- if(i<11){row=11;col=11-i;side='side-bottom'}else if(i<20){row=11-(i-10);col=1;side='side-left'}else if(i<31){row=1;col=1+(i-20);side='side-top'}else{row=1+(i-30);col=11;side='side-right'}
- el.classList.add(side);el.style.gridRow=row;el.style.gridColumn=col;
- if(cls.includes('corner')) el.innerHTML=`<div class="corner-inner">${name}<small>${i===0?'ZBIERZ GOTÓWKĘ':i===10?'ODPOCZNIJ':i===20?'CHWILA SPOKOJU':'KARA'}</small></div>`;
- else el.innerHTML=`${cls.includes('property')?'<div class="property-color"></div>':''}<div class="text-wrap"><div><div class="label">${name}</div>${cls.includes('property')?'<div class="price">WŁASNOŚĆ</div>':''}</div></div>`;
- board.appendChild(el);
+/* postacie — oryginalne archetypy w duchu MOBA, osadzone na Grabiszynku */
+const CHAMPS=[
+ {n:'Latarniczka z Hallera',r:'Wsparcie',c:'#F2A65A',op:'Zapala sodowe światło na całej alei — sąsiedzi płacą jej połowę czynszu.'},
+ {n:'Motorniczy z Pętli',r:'Wojownik',c:'#45C7A8',op:'Zawraca na najmniejszej pętli we Wrocławiu i wraca z podwójną prędkością.'},
+ {n:'Ogrodniczka z Fiołkowej',r:'Mag',c:'#D97AA8',op:'Zamienia przedwojenny ogródek w barierę z bzu i nasturcji.'},
+ {n:'Kartograf Odkrywców',r:'Zwiadowca',c:'#7FC7E8',op:'Zna każdy skrót przez park między Odkrywców a Ojca Beyzyma.'},
+ {n:'Blacharz z Podwórka',r:'Tank',c:'#C0503C',op:'Kryje drużynę za blachą z warsztatu przy Blacharskiej.'},
+ {n:'Nocna Kurierka',r:'Zabójca',c:'#B18CE8',op:'Przecina Grabiszynkę o 3 w nocy i znika w promenadzie Wędrowców.'},
+];
+
+/* =========================================================
+   BUDOWA PLANSZY
+   ========================================================= */
+const C=100,W=64,SIZE=776;
+function geo(i){
+  if(i===0) return {x:SIZE-C,y:SIZE-C,w:C,h:C,rot:0,corner:1};
+  if(i<10)  return {x:SIZE-C-W*i,y:SIZE-C,w:W,h:C,rot:0};
+  if(i===10)return {x:0,y:SIZE-C,w:C,h:C,rot:90,corner:1};
+  if(i<20)  return {x:0,y:SIZE-C-W*(i-10),w:C,h:W,rot:90};
+  if(i===20)return {x:0,y:0,w:C,h:C,rot:180,corner:1};
+  if(i<30)  return {x:C+W*(i-21),y:0,w:W,h:C,rot:180};
+  if(i===30)return {x:SIZE-C,y:0,w:C,h:C,rot:270,corner:1};
+  return {x:SIZE-C,y:C+W*(i-31),w:C,h:W,rot:270};
 }
-spaces.forEach((_,i)=>add(i));
-
-// --- LOGIKA MULTIPLAYER ---
-const SERVER_URL = "https://grb-monopoly.onrender.com"; 
-const socket = io(SERVER_URL);
-let myNick = "";
-let isMyTurn = false;
-const tokenColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
-
-socket.on('connect', () => { 
-    document.getElementById('status').innerText = "Połączono! Możesz wpisać nick.";
-    document.getElementById('join-btn').disabled = false;
+const deck=document.getElementById('deck'), tokens=document.getElementById('tokens');
+FIELDS.forEach((f,i)=>{
+  const g=geo(i); f.geo=g;
+  const el=document.createElement('div');
+  el.className='tile'+(g.corner?' corner':'');
+  el.style.cssText=`left:${g.x}px;top:${g.y}px;width:${g.w}px;height:${g.h}px`;
+  const inner=document.createElement('div');
+  inner.className='inner';
+  inner.style.transform=`translate(-50%,-50%) rotate(${g.rot}deg)`;
+  if(g.corner){
+    inner.innerHTML=`<div class="tglyph">${f.glyph||''}</div>
+      <div class="cbig">${f.n}</div><div class="csub">${f.sub||''}</div>`;
+  }else{
+    const band=f.t==='ulica'?`<div class="band" style="background:${f.g}"></div>`:'<div class="band" style="background:rgba(233,223,201,.14)"></div>';
+    inner.innerHTML=band+
+      (f.t==='ulica'?'':`<div class="tglyph">${f.glyph||''}</div>`)+
+      `<div class="tname">${f.n}</div>`+
+      (f.p?`<div class="tprice">${f.p} zł</div>`:(f.kwota?`<div class="tprice">${f.kwota} zł</div>`:''));
+  }
+  const photo=document.createElement('div'); photo.className='tphoto';
+  el.appendChild(photo); el.appendChild(inner);
+  el.style.pointerEvents='auto';
+  el.addEventListener('click',e=>{e.stopPropagation();selectField(i)});
+  deck.appendChild(el);
+  f.el=el; f.photoEl=photo;
 });
+/* grubość planszy */
+for(let k=1;k<=9;k++){
+  const s=document.createElement('div'); s.className='slab';
+  s.style.transform=`translateZ(${-k*3}px)`;
+  s.style.background=`hsl(198 34% ${13-k*.8}%)`;
+  deck.appendChild(s);
+}
 
-socket.on('connect_error', () => { 
-    document.getElementById('status').innerText = "Błąd: Serwer wyłączony lub się budzi...";
-    document.getElementById('join-btn').disabled = true;
+/* =========================================================
+   KAMERA
+   ========================================================= */
+const world=document.getElementById('world'), stage=document.getElementById('stage');
+let rot=0,tilt=56,zoom=.8,drag=null;
+function cam(){
+  world.style.setProperty('--rot',rot+'deg');
+  world.style.setProperty('--tilt',tilt+'deg');
+  world.style.setProperty('--zoom',zoom);
+  document.querySelectorAll('.tok .bill').forEach(b=>{
+    b.style.transform=`rotateZ(${-rot}deg) rotateX(${-tilt}deg)`;
+  });
+}
+function fit(){ zoom=Math.min(stage.clientWidth,stage.clientHeight*1.35)/SIZE*.92; cam(); }
+stage.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};stage.setPointerCapture(e.pointerId)});
+stage.addEventListener('pointermove',e=>{
+  if(!drag)return;
+  rot=(rot+(e.clientX-drag.x)*.35)%360;
+  tilt=Math.max(28,Math.min(78,tilt-(e.clientY-drag.y)*.2));
+  drag={x:e.clientX,y:e.clientY}; cam();
 });
+addEventListener('pointerup',()=>drag=null);
+stage.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.35,Math.min(1.6,zoom-e.deltaY*.0009));cam()},{passive:false});
+addEventListener('resize',fit);
 
-function joinGame() {
-    const nick = document.getElementById('nickname-input').value.trim();
-    if (nick.length > 0) {
-        myNick = nick;
-        socket.emit('joinGame', nick);
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('lobby').classList.remove('hidden');
+/* =========================================================
+   STAN GRY
+   ========================================================= */
+let P=[],turn=0,rolled=false,lastRoll=0,doubles=0,selected=null,over=false;
+const $=id=>document.getElementById(id);
+const money=v=>v.toLocaleString('pl-PL')+' zł';
+
+function newGame(n=4){
+  P=CHAMPS.slice(0,n).map((c,i)=>({...c,id:i,pos:0,cash:1500,own:[],jail:0,pass:0,img:'',out:false}));
+  FIELDS.forEach(f=>{f.owner=null;f.houses=0});
+  turn=0;rolled=false;doubles=0;over=false;
+  $('log').innerHTML='';
+  log('Nowa partia na Grabiszynku. Start przy <b>al. Hallera</b>.');
+  render(); fit();
+}
+function log(t){const d=document.createElement('div');d.innerHTML=t;$('log').prepend(d)}
+function toast(t){const el=$('toast');el.innerHTML=t;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),3400)}
+const me=()=>P[turn];
+
+/* ruch */
+function moveTo(p,idx,collectStart){
+  if(collectStart && idx<=p.pos){p.cash+=200;log(`<b>${p.n}</b> mija START: +200 zł`)}
+  p.pos=idx;
+}
+function moveBy(p,d){p.pos=(p.pos+d+40)%40}
+function jail(p){p.pos=10;p.jail=3;log(`<b>${p.n}</b> trafia na komisariat.`)}
+function collect(p,amt){P.forEach(q=>{if(q!==p&&!q.out){q.cash-=amt;p.cash+=amt}})}
+function repairs(p,h,ht){
+  let s=0; p.own.forEach(i=>{const f=FIELDS[i];s+=f.houses===5?ht:f.houses*h});
+  p.cash-=s; log(`<b>${p.n}</b> płaci ${money(s)} za remonty.`);
+}
+
+async function animateMove(p,steps){
+  for(let s=0;s<steps;s++){
+    p.pos=(p.pos+1)%40;
+    if(p.pos===0){p.cash+=200;log(`<b>${p.n}</b> przechodzi przez START: +200 zł`)}
+    render(); await new Promise(r=>setTimeout(r,170));
+  }
+}
+
+function railCount(o){return FIELDS.filter(f=>f.t==='kolej'&&f.owner===o).length}
+function utilCount(o){return FIELDS.filter(f=>f.t==='media'&&f.owner===o).length}
+function groupComplete(p,g){
+  const all=FIELDS.map((f,i)=>({f,i})).filter(x=>x.f.g===g);
+  return all.every(x=>x.f.owner===p.id);
+}
+function rentOf(f,roller){
+  if(f.t==='ulica'){
+    if(f.houses>0) return f.r[f.houses];
+    return groupComplete(P[f.owner],f.g)?f.r[0]*2:f.r[0];
+  }
+  if(f.t==='kolej') return 25*Math.pow(2,railCount(f.owner)-1);
+  if(f.t==='media') return lastRoll*(utilCount(f.owner)===2?10:4);
+  return 0;
+}
+
+async function roll(){
+  if(over||rolled&&doubles===0)return;
+  const p=me();
+  const a=1+Math.floor(Math.random()*6), b=1+Math.floor(Math.random()*6);
+  lastRoll=a+b;
+  $('d1').textContent=a;$('d2').textContent=b;
+  $('d1').classList.remove('spin');$('d2').classList.remove('spin');
+  void $('d1').offsetWidth; $('d1').classList.add('spin');$('d2').classList.add('spin');
+  rolled=true; $('bRoll').disabled=true;
+
+  if(p.jail>0){
+    if(a===b){p.jail=0;log(`<b>${p.n}</b> wyrzuca dublet i wychodzi z komisariatu.`)}
+    else if(p.pass>0){p.pass--;p.jail=0;log(`<b>${p.n}</b> używa karty wyjścia.`)}
+    else{p.jail--;log(`<b>${p.n}</b> siedzi na komisariacie (${p.jail}).`);render();$('bEnd').disabled=false;return}
+  }
+  if(a===b){doubles++; if(doubles===3){jail(p);doubles=0;render();$('bEnd').disabled=false;return}}
+  else doubles=0;
+
+  await animateMove(p,a+b);
+  land(p);
+  render();
+  $('bEnd').disabled=false;
+  if(doubles>0&&p.jail===0){$('bRoll').disabled=false;log(`Dublet — <b>${p.n}</b> rzuca ponownie.`)}
+}
+
+function land(p){
+  const f=FIELDS[p.pos];
+  selectField(p.pos);
+  if(f.t==='ulica'||f.t==='kolej'||f.t==='media'){
+    if(f.owner===null){
+      if(p.cash>=f.p){$('bBuy').disabled=false;toast(`<b>${f.n}</b> jest wolne — ${money(f.p)}`)}
+    }else if(f.owner!==p.id){
+      const r=rentOf(f,p), o=P[f.owner];
+      p.cash-=r;o.cash+=r;
+      log(`<b>${p.n}</b> płaci <b>${o.n}</b> ${money(r)} za ${f.n}.`);
+      toast(`Czynsz na ${f.n}: ${money(r)} dla ${o.n}`);
     }
+  }
+  else if(f.t==='podatek'){p.cash-=f.kwota;log(`<b>${p.n}</b> płaci ${money(f.kwota)} — ${f.n}.`)}
+  else if(f.t==='idz_wiezienie'){jail(p);toast('Kontrola biletów. Idziesz na komisariat.')}
+  else if(f.t==='wiesci'||f.t==='kasa'){
+    const deck=f.t==='wiesci'?WIESCI:KASA;
+    const c=deck[Math.floor(Math.random()*deck.length)];
+    log(`<b>${f.n}:</b> ${c.t}`); toast(c.t); c.f(p);
+  }
+  else if(f.t==='parking'){toast('Park Grabiszyński — postój bez opłat.')}
+  if(p.cash<0)bankrupt(p);
 }
 
-socket.on('updatePlayers', (players) => {
-    const listDiv = document.getElementById('players-list');
-    listDiv.innerHTML = '';
-    players.forEach(player => {
-        const div = document.createElement('div');
-        div.className = 'player-item';
-        div.innerText = player.nick;
-        listDiv.appendChild(div);
-    });
-});
-
-function startGame() { socket.emit('startGame'); }
-
-socket.on('gameStarted', (data) => {
-    document.getElementById('lobby').classList.add('hidden');
-    document.getElementById('game-controls').classList.remove('hidden');
-    document.getElementById('board-stage').classList.remove('hidden');
-    
-    generateTokens(data.players);
-    isMyTurn = (data.turn === myNick);
-    updateTurnIndicator(data.turn);
-});
-
-function rollDice() {
-    if(!isMyTurn) return;
-    socket.emit('rollDice');
+function bankrupt(p){
+  p.out=true;
+  p.own.forEach(i=>{FIELDS[i].owner=null;FIELDS[i].houses=0});
+  p.own=[];
+  log(`<b>${p.n}</b> odpada z gry.`);
+  const alive=P.filter(q=>!q.out);
+  if(alive.length===1){over=true;toast(`Zwycięstwo: <b>${alive[0].n}</b>`);log(`🏆 <b>${alive[0].n}</b> przejmuje całe osiedle.`)}
 }
 
-socket.on('diceRolled', (data) => {
-    document.getElementById('dice-result').innerText = data.roll;
-    updateTokens(data.players);
-    isMyTurn = (data.nextTurn === myNick);
-    updateTurnIndicator(data.nextTurn);
-});
+function buy(){
+  const p=me(),f=FIELDS[p.pos];
+  if(f.owner!==null||p.cash<f.p)return;
+  p.cash-=f.p;f.owner=p.id;p.own.push(p.pos);
+  log(`<b>${p.n}</b> kupuje <b>${f.n}</b> za ${money(f.p)}.`);
+  $('bBuy').disabled=true; render(); selectField(p.pos);
+}
+function build(){
+  const p=me(),f=FIELDS[selected];
+  if(!f||f.t!=='ulica'||f.owner!==p.id||!groupComplete(p,f.g)||f.houses>=5||p.cash<f.h)return;
+  p.cash-=f.h;f.houses++;
+  log(`<b>${p.n}</b> stawia ${f.houses===5?'hotel':'dom'} na ${f.n}.`);
+  render(); selectField(selected);
+}
+function endTurn(){
+  if(over)return;
+  do{turn=(turn+1)%P.length}while(P[turn].out);
+  rolled=false;doubles=0;
+  $('bRoll').disabled=false;$('bBuy').disabled=true;$('bEnd').disabled=true;
+  render();
+}
 
-function updateTurnIndicator(turnNick) {
-    const btn = document.getElementById('roll-btn');
-    if(isMyTurn) {
-        document.getElementById('turn-indicator').innerText = "Twoja tura! (" + turnNick + ")";
-        btn.disabled = false;
-    } else {
-        document.getElementById('turn-indicator').innerText = "Tura gracza: " + turnNick;
-        btn.disabled = true;
+/* =========================================================
+   RENDER
+   ========================================================= */
+function render(){
+  tokens.innerHTML='';
+  FIELDS.forEach((f,i)=>{
+    f.el.classList.toggle('here',P.some(p=>!p.out&&p.pos===i));
+    if(f.owner!==null&&f.owner!==undefined){
+      f.el.classList.add('owned'); f.el.style.setProperty('--own',P[f.owner].c);
+    }else{f.el.classList.remove('owned')}
+    if(f.houses){
+      const n=f.houses===5?1:f.houses;
+      for(let k=0;k<n;k++){
+        const g=f.geo, cx=g.x+g.w/2, cy=g.y+g.h/2;
+        const off=(k-(n-1)/2)*13;
+        const hz=f.houses===5?'hotel':'house';
+        addTok(hz,cx+(g.rot%180===0?off:0),cy+(g.rot%180===0?0:off),'');
+      }
     }
+  });
+  P.forEach((p,idx)=>{
+    if(p.out)return;
+    const g=FIELDS[p.pos].geo;
+    const a=(idx%2)*17-8, b=(idx>1?12:-6);
+    const el=addTok('pawn',g.x+g.w/2+a,g.y+g.h/2+b,p.n[0]);
+    el.style.setProperty('--pc',p.c);
+    el.querySelector('.art').style.setProperty('--pimg',p.img?`url(${p.img})`:'none');
+    if(p.img)el.querySelector('.art').textContent='';
+  });
+  cam(); renderPanel();
+}
+function addTok(cls,x,y,letter){
+  const t=document.createElement('div');
+  t.className='tok '+cls;
+  t.style.left=x+'px';t.style.top=y+'px';
+  t.innerHTML=`<div class="bill"><div class="art">${letter||''}</div>${cls==='pawn'?'<div class="ring"></div>':''}</div>`;
+  tokens.appendChild(t); return t;
+}
+function renderPanel(){
+  $('players').innerHTML=P.map((p,i)=>`
+    <div class="pl ${i===turn?'turn':''} ${p.out?'out':''}" style="--pc:${p.c}">
+      <div class="av" style="--pimg:${p.img?`url(${p.img})`:'none'}">${p.img?'':p.n[0]}</div>
+      <div style="flex:1;min-width:0">
+        <div class="nm">${p.n}</div>
+        <div class="rl">${p.r}${p.jail>0?' · komisariat':''}</div>
+        <div class="props">${p.own.length} nieruchomości${p.pass?' · karta wyjścia':''}</div>
+      </div>
+      <div class="cash">${money(p.cash)}</div>
+    </div>`).join('');
+  $('turninfo').textContent=over?'Koniec gry':`Tura: ${me().n}`;
+  const f=FIELDS[selected];
+  $('bBuild').disabled=!(f&&f.t==='ulica'&&f.owner===turn&&groupComplete(me(),f.g)&&f.houses<5&&me().cash>=f.h);
 }
 
-// --- LOGIKA PIONKÓW ---
-function generateTokens(players) {
-    document.querySelectorAll('.token').forEach(t => t.remove());
-    
-    // Czekamy ułamek sekundy by plansza wyliczyła wymiary
-    setTimeout(() => {
-        const startSpace = document.getElementById('space-0');
-        const spaceRect = startSpace.getBoundingClientRect();
-        const boardRect = board.getBoundingClientRect();
-        
-        const x = spaceRect.left - boardRect.left + (spaceRect.width / 2) - 11;
-        const y = spaceRect.top - boardRect.top + (spaceRect.height / 2) - 11;
+/* karta pola */
+function selectField(i){
+  selected=i;
+  FIELDS.forEach(f=>f.el.classList.remove('sel'));
+  FIELDS[i].el.classList.add('sel');
+  const f=FIELDS[i];
+  const own=f.owner!==null&&f.owner!==undefined?P[f.owner]:null;
+  let rows='';
+  if(f.t==='ulica'){
+    rows=`<div class="meta">
+      Cena działki: <b>${money(f.p)}</b><br>
+      Czynsz bazowy: ${money(f.r[0])} · z kompletem ulic: ${money(f.r[0]*2)}<br>
+      1 dom ${money(f.r[1])} · 2 ${money(f.r[2])} · 3 ${money(f.r[3])} · 4 ${money(f.r[4])} · hotel ${money(f.r[5])}<br>
+      Koszt domu: ${money(f.h)} · zabudowa: ${f.houses===5?'hotel':f.houses+' dom(y)'}
+    </div>`;
+  } else if(f.t==='kolej'){rows=`<div class="meta">Węzeł komunikacyjny · ${money(f.p)}<br>Czynsz 25 / 50 / 100 / 200 zł zależnie od liczby węzłów.</div>`}
+  else if(f.t==='media'){rows=`<div class="meta">Infrastruktura · ${money(f.p)}<br>Czynsz: 4× oczka (jedna) lub 10× oczka (obie).</div>`}
+  else if(f.t==='podatek'){rows=`<div class="meta">Opłata: ${money(f.kwota)}</div>`}
+  else rows=`<div class="meta">${f.sub||'Pole specjalne osiedla.'}</div>`;
 
-        players.forEach((player, index) => {
-            const token = document.createElement('div');
-            token.className = 'token';
-            token.id = 'token-' + player.nick;
-            token.style.backgroundColor = tokenColors[index % tokenColors.length];
-            token.style.left = (x + (index * 5)) + 'px'; 
-            token.style.top = y + 'px';
-            board.appendChild(token);
-        });
-    }, 100);
+  $('tab-pole').innerHTML=`
+    <div class="card">
+      <div class="ph" style="--img:${f.img?`url(${f.img})`:'none'}">${f.img?'':'Brak zdjęcia — wgraj widok tego miejsca'}</div>
+      <div class="bd">
+        <h3>${f.n}</h3>
+        <div class="tag">${f.t}</div>${f.g?`<div class="tag" style="border-color:${f.g};color:${f.g}">grupa</div>`:''}
+        ${own?`<div class="tag" style="border-color:${own.c};color:${own.c}">${own.n}</div>`:'<div class="tag">wolne</div>'}
+        ${rows}
+        <label class="file">Wgraj zdjęcie z Grabiszynka<input type="file" accept="image/*" data-field="${i}"></label>
+        <div class="hint">Zdjęcie ląduje na kafelku planszy i na karcie pola. Najlepiej działa kadr kwadratowy: fasada, brama, zieleń.</div>
+      </div>
+    </div>`;
+  $('tab-pole').querySelector('input[type=file]').addEventListener('change',ev=>{
+    const file=ev.target.files[0]; if(!file)return;
+    const rd=new FileReader();
+    rd.onload=()=>{f.img=rd.result;f.photoEl.style.backgroundImage=`url(${rd.result})`;selectField(i)};
+    rd.readAsDataURL(file);
+  });
+  renderPanel();
 }
 
-function updateTokens(players) {
-    const boardRect = board.getBoundingClientRect();
-
-    players.forEach((player, index) => {
-        const token = document.getElementById('token-' + player.nick);
-        if (token) {
-            const spaceElement = document.getElementById('space-' + player.position);
-            if (!spaceElement) return;
-            
-            const spaceRect = spaceElement.getBoundingClientRect();
-            const x = spaceRect.left - boardRect.left + (spaceRect.width / 2) - 11;
-            const y = spaceRect.top - boardRect.top + (spaceRect.height / 2) - 11;
-
-            token.style.left = (x + (index * 5)) + 'px';
-            token.style.top = y + 'px';
-        }
+/* zakładka postaci */
+function renderChamps(){
+  $('tab-post').innerHTML=P.map((p,i)=>`
+    <div class="card">
+      <div class="ph" style="--img:${p.img?`url(${p.img})`:'none'};height:150px">${p.img?'':'Portret pionka — wgraj zdjęcie'}</div>
+      <div class="bd">
+        <h3 style="color:${p.c}">${p.n}</h3>
+        <div class="tag" style="border-color:${p.c};color:${p.c}">${p.r}</div>
+        <div class="meta">${p.op}</div>
+        <input type="text" value="${p.n}" data-ren="${i}" placeholder="Nazwa postaci">
+        <label class="file">Wgraj zdjęcie twarzy<input type="file" accept="image/*" data-champ="${i}"></label>
+      </div>
+    </div>`).join('')+
+    `<div class="hint">Zdjęcie zostaje w przeglądarce — nic nie jest wysyłane. Pionek na planszy od razu dostaje twarz i poświatę w kolorze postaci.</div>`;
+  $('tab-post').querySelectorAll('input[type=file]').forEach(inp=>{
+    inp.addEventListener('change',ev=>{
+      const p=P[+inp.dataset.champ], file=ev.target.files[0]; if(!file)return;
+      const rd=new FileReader(); rd.onload=()=>{p.img=rd.result;render();renderChamps();renderBrief()};
+      rd.readAsDataURL(file);
     });
+  });
+  $('tab-post').querySelectorAll('input[data-ren]').forEach(inp=>{
+    inp.addEventListener('input',()=>{P[+inp.dataset.ren].n=inp.value||'Bez nazwy';render();renderBrief()});
+  });
 }
+
+/* zakładka figurki — brief do wygenerowania modelu */
+function renderBrief(){
+  const opts=P.map((p,i)=>`<option value="${i}">${p.n}</option>`).join('');
+  $('tab-figu').innerHTML=`
+    <div class="card"><div class="bd">
+      <h3>Brief na figurkę</h3>
+      <div class="meta">Wybierz postać, dopisz szczegóły ze zdjęcia i skopiuj gotowy opis do generatora grafiki lub modelarza 3D.</div>
+      <select id="fSel">${opts}</select>
+      <input type="text" id="fCechy" placeholder="Cechy ze zdjęcia: fryzura, okulary, broda, ubranie">
+      <input type="text" id="fPole" placeholder="Pole z planszy jako tło: np. Pilnikarska, Park Grabiszyński">
+      <textarea id="fOut"></textarea>
+      <div class="hint">Postacie są autorskie — celowo nie kopiuję konkretnych bohaterów z League of Legends, żeby dało się tego używać bez ryzyka prawnego. Styl zostaje ten sam: splash-art, mocna sylwetka, czytelna klasa postaci.</div>
+    </div></div>`;
+  const upd=()=>{
+    const p=P[+$('fSel').value];
+    $('fOut').value=
+`Figurka kolekcjonerska 1/10, styl splash-artu MOBA, renderowana jako winylowy model z podstawką.
+
+POSTAĆ: ${p.n} — klasa: ${p.r}.
+PODOBIEŃSTWO: twarz z załączonego zdjęcia, stylizowana, lekko wyostrzone rysy. ${$('fCechy').value||'(dopisz cechy ze zdjęcia)'}
+ROLA W ŚWIECIE: ${p.op}
+STRÓJ: nawiązanie do przedwojennego osiedla robotniczego Grabiszynek we Wrocławiu — tynk, blacha, mosiądz, sodowe światło latarni; rzemieślnicze detale (narzędzia z ulic Szlifierskiej, Heblarskiej, Blacharskiej).
+POZA: dynamiczna, bohaterska, ciężar ciała na jednej nodze, wyraźna sylwetka czytelna z odległości.
+PALETA: ${p.c} jako akcent, głęboka zieleń parkowa, ciepły bursztyn latarni, kremowy tynk.
+PODSTAWKA: fragment chodnika z tabliczką ulicy „${$('fPole').value||'Grabiszynek'}”, trawa i liście z Parku Grabiszyńskiego.
+OŚWIETLENIE: nocne, boczne światło latarni, delikatna poświata wokół postaci.
+TŁO: przezroczyste lub jednolite, bez logotypów i znaków firmowych.`;
+  };
+  ['fSel','fCechy','fPole'].forEach(id=>$(id).addEventListener('input',upd));
+  upd();
+}
+
+/* zakładki */
+document.querySelectorAll('#tabs button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); $('tab-'+b.dataset.tab).classList.add('on');
+    if(b.dataset.tab==='post')renderChamps();
+    if(b.dataset.tab==='figu')renderBrief();
+  });
+});
+$('bRoll').onclick=roll; $('bBuy').onclick=buy; $('bBuild').onclick=build;
+$('bEnd').onclick=endTurn; $('bNew').onclick=()=>newGame(4);
+
+newGame(4); selectField(0); renderChamps(); renderBrief();
 </script>
 </body>
 </html>
